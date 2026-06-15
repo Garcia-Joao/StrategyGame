@@ -38,29 +38,18 @@ public class UnitInteractionController : MonoBehaviour
         {
             targetCamera = Camera.main;
         }
-
-        inputManager = ServiceLocator.Locate<InputManager>();
     }
 
-    private void Start()
+    public void Initialize(InputManager inputManager, HexGridManager gridManager, HexSelectionManager cellSelection, UnitSelectionManager unitSelection, 
+                           MovementRangeVisualizer rangeVisualizer, PathPreviewSystem pathPreview, UnitMovementController movementController)
     {
-        gridManager =
-            ServiceLocator.Locate<HexGridManager>();
-
-        cellSelection =
-            ServiceLocator.Locate<HexSelectionManager>();
-
-        unitSelection =
-            ServiceLocator.Locate<UnitSelectionManager>();
-
-        rangeVisualizer =
-            ServiceLocator.Locate<MovementRangeVisualizer>();
-
-        pathPreview =
-            ServiceLocator.Locate<PathPreviewSystem>();
-
-        movementController =
-            ServiceLocator.Locate<UnitMovementController>();
+        this.inputManager = inputManager;
+        this.gridManager = gridManager;
+        this.cellSelection = cellSelection;
+        this.unitSelection = unitSelection;
+        this.rangeVisualizer = rangeVisualizer;
+        this.pathPreview = pathPreview;
+        this.movementController = movementController;
 
         pathfinder =
             new HexPathfinder(

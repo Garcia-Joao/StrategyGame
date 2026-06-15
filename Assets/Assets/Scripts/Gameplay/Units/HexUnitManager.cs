@@ -15,11 +15,6 @@ public class UnitManager : MonoBehaviour
     public IReadOnlyList<HexUnit>
         Units => units;
 
-    private void Awake()
-    {
-        ServiceLocator.Register(this);
-    }
-
     public HexUnit SpawnUnit(HexCell cell)
     {
         Vector3 spawnPos = cell.WorldPosition + Vector3.up * unitHeightOffset;

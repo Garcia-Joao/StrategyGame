@@ -8,16 +8,10 @@ public class MovementRangeVisualizer : MonoBehaviour
 
     private HexGridManager gridManager;
 
-    private void Awake()
+    public void Initialize(
+        HexGridManager gridManager)
     {
-        ServiceLocator.Register(this);
-    }
-
-    private void Start()
-    {
-        gridManager =
-            ServiceLocator
-                .Locate<HexGridManager>();
+        this.gridManager = gridManager;
     }
 
     public void ShowRange(

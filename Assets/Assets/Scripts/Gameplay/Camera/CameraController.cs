@@ -21,13 +21,16 @@ public class CameraController : MonoBehaviour
 
     private void Start()
     {
-        inputManager = ServiceLocator.Locate<InputManager>();
-
         currentYaw = transform.eulerAngles.y;
         targetYaw = currentYaw;
 
         currentZoom = 0.5f;
         targetZoom = currentZoom;
+    }
+
+    public void Initialize(InputManager inputManager)
+    {
+        this.inputManager = inputManager;
     }
 
     private void Update()

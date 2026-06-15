@@ -32,9 +32,10 @@ public class HexGridManager : MonoBehaviour
     private float noiseOffsetX;
     private float noiseOffsetY;
 
+    private UnitManager unitManager;
+
     private void Awake()
     {
-        ServiceLocator.Register(this);
         grid = new HexGrid();
 
         Random.InitState(seed);
@@ -46,6 +47,11 @@ public class HexGridManager : MonoBehaviour
             Random.Range(-10000f, 10000f);
     }
 
+    public void Initialize(UnitManager unitManager)
+    {
+        this.unitManager = unitManager;
+    }
+
     private void Start()
     {
         GenerateGrid();
@@ -55,7 +61,7 @@ public class HexGridManager : MonoBehaviour
         int randomIndex = Random.Range(1, cells.Count);
 
         HexCell spawnCell = cells[randomIndex];
-        ServiceLocator.Locate<UnitManager>().SpawnUnit(spawnCell);
+        unitManager.SpawnUnit(spawnCell);
     }
 
     private void GenerateGrid()

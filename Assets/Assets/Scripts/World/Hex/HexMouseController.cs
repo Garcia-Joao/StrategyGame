@@ -21,13 +21,13 @@ public class HexMouseController : MonoBehaviour
         }
     }
 
-    private void Start()
+    public void Initialize(
+    InputManager inputManager,
+    HexSelectionManager selectionManager)
     {
-        inputManager =
-    ServiceLocator.Locate<InputManager>();
+        this.inputManager = inputManager;
+        this.selectionManager = selectionManager;
 
-        selectionManager =
-            ServiceLocator.Locate<HexSelectionManager>();
         raycaster =
             new HexRaycaster(
                 targetCamera);

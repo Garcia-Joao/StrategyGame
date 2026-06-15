@@ -11,12 +11,6 @@ public class UnitSelectionManager : MonoBehaviour
 
     public event Action<HexUnit> UnitSelected;
 
-
-    private void Awake()
-    {
-        ServiceLocator.Register(this);
-    }
-
     public void SelectUnit(HexUnit unit)
     {
         if (SelectedUnit == unit)

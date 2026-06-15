@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
-[DefaultExecutionOrder(-100)]
+[DefaultExecutionOrder(-80)]
 public class InputManager : MonoBehaviour
 {
     #region Fields
@@ -34,10 +34,7 @@ public class InputManager : MonoBehaviour
 
     private void Awake()
     {
-        ServiceLocator.Register(this);
-
         inputActions = new GameInputActions();
-
         RegisterInputs();
     }
 

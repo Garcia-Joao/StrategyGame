@@ -17,17 +17,15 @@ public class TerrainBrushManager : MonoBehaviour
     public bool HasActiveBrush =>
         activeBrush != null;
 
+    public void Initialize(InputManager inputManager, HexGridManager gridManager, HexSelectionManager selectionManager)
+    {
+        this.inputManager = inputManager;
+        this.gridManager = gridManager;
+        this.selectionManager = selectionManager;
+    }
+
     private void Start()
     {
-        inputManager =
-            ServiceLocator.Locate<InputManager>();
-
-        gridManager =
-            FindFirstObjectByType<HexGridManager>();
-
-        selectionManager =
-            FindFirstObjectByType<HexSelectionManager>();
-
         inputManager.Brush1Action.ActionStarted +=
             ToggleRaiseBrush;
 

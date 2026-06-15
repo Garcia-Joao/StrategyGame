@@ -10,7 +10,6 @@ public class MovementRangeCalculator
         HexGrid grid,
         HexPathRules rules)
     {
-        ServiceLocator.Register(this);
         this.grid = grid;
         this.rules = rules;
     }
@@ -36,9 +35,7 @@ public class MovementRangeCalculator
             (HexCell current, int cost) =
                 frontier.Dequeue();
 
-            foreach (HexCell neighbor
-                     in grid.GetNeighbors(
-                         current.Coordinate))
+            foreach (HexCell neighbor in grid.GetNeighbors(current.Coordinate))
             {
                 if (!rules.CanMove(
                         current,

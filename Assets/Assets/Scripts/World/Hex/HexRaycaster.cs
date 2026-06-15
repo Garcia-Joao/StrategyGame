@@ -33,8 +33,6 @@ public class HexRaycaster
     {
         Ray ray = camera.ScreenPointToRay(mousePosition);
 
-        Debug.DrawRay(ray.origin, ray.direction * 100f, Color.red, 2f);
-
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
             Debug.Log("Hit object: " + hit.collider.name);

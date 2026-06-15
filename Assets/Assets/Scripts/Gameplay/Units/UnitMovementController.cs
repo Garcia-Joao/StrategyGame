@@ -2,11 +2,6 @@ using UnityEngine;
 
 public class UnitMovementController : MonoBehaviour
 {
-    private void Awake()
-    {
-        ServiceLocator.Register(this);
-    }
-
     public void MoveUnit(
         HexUnit unit,
         HexCell destination)

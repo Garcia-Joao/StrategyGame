@@ -9,11 +9,6 @@ public class HexSelectionManager : MonoBehaviour
     public event Action<HexCell> CellHovered;
     public event Action<HexCell> CellSelected;
 
-    private void Awake()
-    {
-        ServiceLocator.Register(this);
-    }
-
     public void SetHoveredCell(HexCell cell)
     {
         if (HoveredCell == cell)
