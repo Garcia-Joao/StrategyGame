@@ -9,6 +9,8 @@ public class CameraController : MonoBehaviour
     [Header("Settings")]
     [SerializeField] private CameraSettings cameraSettings;
 
+    public bool IsRotating { get; private set; }
+
     private InputManager inputManager;
 
     private Vector3 currentVelocity;
@@ -77,7 +79,12 @@ public class CameraController : MonoBehaviour
     private void HandleRotation()
     {
         Vector2 rotationInput =
-            inputManager.CameraRotateAction.GetCurrentValue();
+            inputManager
+                .CameraRotateAction
+                .GetCurrentValue();
+
+        IsRotating =
+            rotationInput.sqrMagnitude > 0.001f;
 
         targetYaw +=
             rotationInput.x *
@@ -89,10 +96,14 @@ public class CameraController : MonoBehaviour
             cameraSettings.RotationSmoothness * Time.deltaTime
         );
 
-        Vector3 rotation = transform.eulerAngles;
-        rotation.y = currentYaw;
+        Vector3 rotation =
+            transform.eulerAngles;
 
-        transform.eulerAngles = rotation;
+        rotation.y =
+            currentYaw;
+
+        transform.eulerAngles =
+            rotation;
     }
 
     private void HandleZoom()

@@ -454,6 +454,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: dc1c85d97e9eb974f9815c1e52fd527a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::UnitMovementController
+  moveSpeed: 10
 --- !u!114 &1438769584
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -516,6 +517,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitInteractionController
   targetCamera: {fileID: 2113772144}
   pathRules: {fileID: 11400000, guid: 033c432d441e29a4081c6b691f22e29c, type: 2}
+  dragThreshold: 5
 --- !u!114 &1438769589
 MonoBehaviour:
   m_ObjectHideFlags: 0

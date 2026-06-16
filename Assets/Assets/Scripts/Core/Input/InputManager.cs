@@ -23,7 +23,8 @@ public class InputManager : MonoBehaviour
 
     public MappedAction<Vector2> MousePositionAction { get; private set; }
 
-    public MappedAction<float> MouseLeftClickAction { get; private set; }
+    public MappedAction<float> MouseSelectAction { get; private set; }
+    public MappedAction<float> MouseCancelAction { get; private set; }
 
     public MappedAction<float> Brush1Action { get; private set; }
     public MappedAction<float> Brush2Action { get; private set; }
@@ -80,9 +81,13 @@ public class InputManager : MonoBehaviour
             RegisterInput<Vector2>(
                 inputActions.Gameplay.Mouse_Position);
 
-        MouseLeftClickAction =
+        MouseSelectAction =
             RegisterInput<float>(
-                inputActions.Gameplay.Mouse_LClicked);
+                inputActions.Gameplay.Select);
+
+        MouseCancelAction =
+            RegisterInput<float>(
+                inputActions.Gameplay.Cancel);
 
         Brush1Action =
             RegisterInput<float>(

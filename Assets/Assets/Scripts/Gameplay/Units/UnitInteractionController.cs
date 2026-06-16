@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class UnitInteractionController : MonoBehaviour
 {
@@ -32,6 +33,13 @@ public class UnitInteractionController : MonoBehaviour
     private HashSet<HexCell> reachableCells =
         new();
 
+    private Vector2 rightClickStartPosition;
+
+    private bool isDraggingRightClick;
+
+    [SerializeField]
+    private float dragThreshold = 5f;
+
     private void Awake()
     {
         if (targetCamera == null)
@@ -40,8 +48,14 @@ public class UnitInteractionController : MonoBehaviour
         }
     }
 
-    public void Initialize(InputManager inputManager, HexGridManager gridManager, HexSelectionManager cellSelection, UnitSelectionManager unitSelection, 
-                           MovementRangeVisualizer rangeVisualizer, PathPreviewSystem pathPreview, UnitMovementController movementController)
+    public void Initialize(
+        InputManager inputManager,
+        HexGridManager gridManager,
+        HexSelectionManager cellSelection,
+        UnitSelectionManager unitSelection,
+        MovementRangeVisualizer rangeVisualizer,
+        PathPreviewSystem pathPreview,
+        UnitMovementController movementController)
     {
         this.inputManager = inputManager;
         this.gridManager = gridManager;
@@ -50,6 +64,10 @@ public class UnitInteractionController : MonoBehaviour
         this.rangeVisualizer = rangeVisualizer;
         this.pathPreview = pathPreview;
         this.movementController = movementController;
+
+        Debug.Assert(gridManager != null, "GridManager NULL");
+        Debug.Assert(gridManager.Grid != null, "Grid NULL");
+        Debug.Assert(pathRules != null, "PathRules NULL");
 
         pathfinder =
             new HexPathfinder(
@@ -64,40 +82,101 @@ public class UnitInteractionController : MonoBehaviour
         raycaster =
             new HexRaycaster(
                 targetCamera);
+
+        inputManager.MouseSelectAction.ActionStarted += OnLeftClick;
+
+        inputManager.MouseCancelAction.ActionStarted += OnRightMouseStarted;
+        inputManager.MouseCancelAction.ActionCanceled += OnRightMouseReleased;
+
+        cellSelection.CellHovered += OnCellHovered;
+
+        unitSelection.UnitSelected += OnUnitSelected;
+        unitSelection.UnitDeselected += OnUnitDeselected;
     }
 
-    private void OnEnable()
+    private void Update()
     {
-        if (inputManager != null)
-            inputManager.MouseLeftClickAction.ActionStarted += OnLeftClick;
+        if (!Mouse.current.rightButton.isPressed)
+        {
+            return;
+        }
 
-        if (cellSelection != null)
-            cellSelection.CellHovered += OnCellHovered;
+        if (isDraggingRightClick)
+        {
+            return;
+        }
 
-        if (unitSelection != null)
-            unitSelection.UnitSelected += OnUnitSelected;
+        Vector2 currentPosition =
+            inputManager
+                .MousePositionAction
+                .GetCurrentValue();
+
+        float distance =
+            Vector2.Distance(
+                currentPosition,
+                rightClickStartPosition);
+
+        if (distance > dragThreshold)
+        {
+            isDraggingRightClick = true;
+        }
     }
 
-    private void OnDisable()
+    private void OnDestroy()
     {
         if (inputManager != null)
-            inputManager.MouseLeftClickAction.ActionStarted -= OnLeftClick;
+        {
+            inputManager.MouseSelectAction.ActionStarted -= OnLeftClick;
+
+            inputManager.MouseCancelAction.ActionStarted -= OnRightMouseStarted;
+            inputManager.MouseCancelAction.ActionCanceled -= OnRightMouseReleased;
+        }
 
         if (cellSelection != null)
+        {
             cellSelection.CellHovered -= OnCellHovered;
+        }
 
         if (unitSelection != null)
+        {
             unitSelection.UnitSelected -= OnUnitSelected;
+            unitSelection.UnitDeselected -= OnUnitDeselected;
+        }
     }
 
-    private void OnLeftClick(float _)
+    private void OnRightMouseStarted(
+        float _)
+    {
+        rightClickStartPosition =
+            inputManager
+                .MousePositionAction
+                .GetCurrentValue();
+
+        isDraggingRightClick = false;
+    }
+
+    private void OnRightMouseReleased(
+        float _)
+    {
+        if (isDraggingRightClick)
+        {
+            return;
+        }
+
+        unitSelection.ClearSelection();
+    }
+
+    private void OnLeftClick(
+        float _)
     {
         Vector2 mousePosition =
             inputManager
                 .MousePositionAction
                 .GetCurrentValue();
 
-        HexUnitView unitView = raycaster.RaycastUnit(mousePosition);
+        HexUnitView unitView =
+            raycaster.RaycastUnit(
+                mousePosition);
 
         if (unitView != null)
         {
@@ -115,10 +194,14 @@ public class UnitInteractionController : MonoBehaviour
             return;
         }
 
-        HexUnit selectedUnit =
-            unitSelection.SelectedUnit;
+        HexUnit selectedUnit = unitSelection.SelectedUnit;
 
         if (selectedUnit == null)
+        {
+            return;
+        }
+
+        if (selectedUnit.IsMoving)
         {
             return;
         }
@@ -129,25 +212,32 @@ public class UnitInteractionController : MonoBehaviour
             return;
         }
 
+        List<HexCell> path =
+            pathfinder.FindPath(
+                selectedUnit.CurrentCell,
+                cellView.Cell);
+
+        rangeVisualizer.Clear();
+        pathPreview.Clear();
         movementController.MoveUnit(
             selectedUnit,
-            cellView.Cell);
+            path);
 
         reachableCells =
             rangeCalculator
                 .GetReachableCells(
                     selectedUnit);
 
-        rangeVisualizer.ShowRange(
-            reachableCells);
+        if(selectedUnit.IsMoving)
+            return;
 
+        rangeVisualizer.ShowRange(reachableCells);
         pathPreview.Clear();
     }
 
     private void OnUnitSelected(
         HexUnit unit)
     {
-        Debug.Log("Unit Selected");
         pathPreview.Clear();
 
         rangeVisualizer.Clear();
@@ -168,6 +258,16 @@ public class UnitInteractionController : MonoBehaviour
             reachableCells);
     }
 
+    private void OnUnitDeselected(
+        HexUnit unit)
+    {
+        pathPreview.Clear();
+
+        rangeVisualizer.Clear();
+
+        reachableCells.Clear();
+    }
+
     private void OnCellHovered(
         HexCell hoveredCell)
     {
@@ -177,6 +277,11 @@ public class UnitInteractionController : MonoBehaviour
             unitSelection.SelectedUnit;
 
         if (selectedUnit == null)
+        {
+            return;
+        }
+
+        if (selectedUnit.IsMoving)
         {
             return;
         }

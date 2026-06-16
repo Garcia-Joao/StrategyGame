@@ -19,32 +19,24 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private UnitInteractionController unitInteractionController;
     [SerializeField] private TerrainBrushManager terrainBrushManager;
 
-    private void Awake()
+    private void Start()
     {
-        InjectCameraController();
-        InjectHexMouseController();
-        InjectUnitInteractionController();
-        InjectTerrainBrushManager();
+        gridManager.Initialize(unitManager);
 
-        InjectVisualizers();
-        InjectGridManager();
-    }
+        movementRangeVisualizer.Initialize(gridManager);
+        pathPreviewSystem.Initialize(gridManager);
 
-    private void InjectCameraController()
-    {
-        cameraController.Initialize(
-            inputManager);
-    }
+        cameraController.Initialize(inputManager);
 
-    private void InjectHexMouseController()
-    {
         hexMouseController.Initialize(
             inputManager,
             hexSelectionManager);
-    }
 
-    private void InjectUnitInteractionController()
-    {
+        terrainBrushManager.Initialize(
+            inputManager,
+            gridManager,
+            hexSelectionManager);
+
         unitInteractionController.Initialize(
             inputManager,
             gridManager,
@@ -53,25 +45,7 @@ public class GameBootstrap : MonoBehaviour
             movementRangeVisualizer,
             pathPreviewSystem,
             unitMovementController);
-    }
 
-    private void InjectTerrainBrushManager()
-    {
-        terrainBrushManager.Initialize(inputManager, gridManager, hexSelectionManager);
-    }
-
-    private void InjectVisualizers()
-    {
-        movementRangeVisualizer.Initialize(
-            gridManager);
-
-        pathPreviewSystem.Initialize(
-            gridManager);
-    }
-
-    private void InjectGridManager()
-    {
-        gridManager.Initialize(
-            unitManager);
+        unitMovementController.Initialize(unitManager);
     }
 }

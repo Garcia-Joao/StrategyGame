@@ -35,7 +35,7 @@ public class TerrainBrushManager : MonoBehaviour
         inputManager.Brush3Action.ActionStarted +=
             ToggleFireballBrush;
 
-        inputManager.MouseLeftClickAction.ActionStarted +=
+        inputManager.MouseSelectAction.ActionStarted +=
             ApplyBrush;
     }
 

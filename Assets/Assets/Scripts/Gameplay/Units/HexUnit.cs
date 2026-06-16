@@ -15,6 +15,11 @@ public class HexUnit
         get;
         private set;
     }
+    public bool IsMoving
+    {
+        get;
+        private set;
+    }
 
     public HexUnit(
         string name,
@@ -34,5 +39,10 @@ public class HexUnit
         HexUnitView view)
     {
         View = view;
+    }
+
+    public void SetMoving(bool value)
+    {
+        IsMoving = value;
     }
 }

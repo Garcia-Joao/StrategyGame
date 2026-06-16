@@ -9,6 +9,8 @@ public class UnitManager : MonoBehaviour
     [SerializeField]
     private float unitHeightOffset = 0.5f;
 
+    public float UnitHeightOffset => unitHeightOffset;
+
     private readonly List<HexUnit>
         units = new();
 
@@ -23,7 +25,7 @@ public class UnitManager : MonoBehaviour
 
         HexUnitView view = instance.GetComponent<HexUnitView>();
 
-        HexUnit unit = new HexUnit("Unit", 6);
+        HexUnit unit = new HexUnit("Unit", 10);
 
         unit.SetCell(cell);
         unit.SetView(view);

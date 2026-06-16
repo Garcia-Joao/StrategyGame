@@ -43,9 +43,18 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Mouse_LClicked",
+                    "name": "Select",
                     "type": "Button",
                     "id": "94bb3938-3862-4075-909d-2790ed8814b1",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "Cancel",
+                    "type": "Button",
+                    "id": "4a445aa4-073d-4c28-a75b-b8d72692df6e",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -197,7 +206,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Mouse_LClicked",
+                    "action": "Select",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -231,6 +240,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Brush_3",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "ee92a895-a494-4df9-9b6e-e687919c3957",
+                    "path": "<Mouse>/rightButton",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Cancel",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

@@ -45,22 +45,32 @@ public class HexGridManager : MonoBehaviour
 
         noiseOffsetY =
             Random.Range(-10000f, 10000f);
+
+        GenerateGrid();
     }
 
     public void Initialize(UnitManager unitManager)
     {
         this.unitManager = unitManager;
+
+        Debug.Assert(
+            unitManager != null,
+            "UnitManager NULL");
     }
 
     private void Start()
     {
-        GenerateGrid();
         SpawnVisuals();
-        List<HexCell> cells = Grid.GetAllCells().ToList();
 
-        int randomIndex = Random.Range(1, cells.Count);
+        List<HexCell> cells =
+            Grid.GetAllCells().ToList();
 
-        HexCell spawnCell = cells[randomIndex];
+        int randomIndex =
+            Random.Range(1, cells.Count);
+
+        HexCell spawnCell =
+            cells[randomIndex];
+
         unitManager.SpawnUnit(spawnCell);
     }
 

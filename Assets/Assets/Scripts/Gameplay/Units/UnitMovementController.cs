@@ -1,27 +1,81 @@
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class UnitMovementController : MonoBehaviour
 {
+    [SerializeField]
+    private float moveSpeed = 8f;
+
+    private UnitManager unitManager;
+
+    public void Initialize(UnitManager unitManager)
+    {
+        this.unitManager = unitManager;
+    }
+
     public void MoveUnit(
         HexUnit unit,
-        HexCell destination)
+        List<HexCell> path)
     {
-        if (unit == null)
+        if (unit.IsMoving)
         {
             return;
         }
 
-        unit.SetCell(
-            destination);
+        StartCoroutine(
+            MoveRoutine(
+                unit,
+                path));
+    }
 
-        HexUnitView view =
-            unit.View;
+    private IEnumerator MoveRoutine(
+        HexUnit unit,
+        List<HexCell> path)
+    {
+        unit.SetMoving(true);
 
-        if (view != null)
+        foreach (HexCell cell in path)
         {
-            view.transform.position =
-                destination.WorldPosition +
-                Vector3.up * 0.5f;
+            yield return MoveToCell(
+                unit,
+                cell);
         }
+
+        unit.SetMoving(false);
+    }
+
+    private IEnumerator MoveToCell(
+        HexUnit unit,
+        HexCell targetCell)
+    {
+        Transform transform =
+            unit.View.transform;
+
+        Vector3 targetPosition =
+            targetCell.WorldPosition +
+            Vector3.up * unitManager.UnitHeightOffset;
+
+        while (
+            Vector3.Distance(
+                transform.position,
+                targetPosition)
+            > 0.02f)
+        {
+            transform.position =
+                Vector3.MoveTowards(
+                    transform.position,
+                    targetPosition,
+                    moveSpeed *
+                    Time.deltaTime);
+
+            yield return null;
+        }
+
+        transform.position =
+            targetPosition;
+
+        unit.SetCell(
+            targetCell);
     }
 }

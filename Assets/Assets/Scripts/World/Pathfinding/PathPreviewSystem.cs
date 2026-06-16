@@ -8,10 +8,13 @@ public class PathPreviewSystem : MonoBehaviour
 
     private HexGridManager gridManager;
 
-    public void Initialize(
-        HexGridManager gridManager)
+    public void Initialize(HexGridManager gridManager)
     {
         this.gridManager = gridManager;
+
+        Debug.Assert(
+            gridManager != null,
+            "GridManager NULL");
     }
 
     public void ShowPath(

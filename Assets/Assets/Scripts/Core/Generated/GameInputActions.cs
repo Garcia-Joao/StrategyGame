@@ -129,9 +129,18 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""initialStateCheck"": true
                 },
                 {
-                    ""name"": ""Mouse_LClicked"",
+                    ""name"": ""Select"",
                     ""type"": ""Button"",
                     ""id"": ""94bb3938-3862-4075-909d-2790ed8814b1"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""Cancel"",
+                    ""type"": ""Button"",
+                    ""id"": ""4a445aa4-073d-4c28-a75b-b8d72692df6e"",
                     ""expectedControlType"": """",
                     ""processors"": """",
                     ""interactions"": """",
@@ -283,7 +292,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""interactions"": """",
                     ""processors"": """",
                     ""groups"": """",
-                    ""action"": ""Mouse_LClicked"",
+                    ""action"": ""Select"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
                 },
@@ -319,6 +328,17 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Brush_3"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""ee92a895-a494-4df9-9b6e-e687919c3957"",
+                    ""path"": ""<Mouse>/rightButton"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""Cancel"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -331,7 +351,8 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         m_Gameplay_Camera_Rotation = m_Gameplay.FindAction("Camera_Rotation", throwIfNotFound: true);
         m_Gameplay_Camera_Zoom = m_Gameplay.FindAction("Camera_Zoom", throwIfNotFound: true);
         m_Gameplay_Mouse_Position = m_Gameplay.FindAction("Mouse_Position", throwIfNotFound: true);
-        m_Gameplay_Mouse_LClicked = m_Gameplay.FindAction("Mouse_LClicked", throwIfNotFound: true);
+        m_Gameplay_Select = m_Gameplay.FindAction("Select", throwIfNotFound: true);
+        m_Gameplay_Cancel = m_Gameplay.FindAction("Cancel", throwIfNotFound: true);
         m_Gameplay_Brush_1 = m_Gameplay.FindAction("Brush_1", throwIfNotFound: true);
         m_Gameplay_Brush_2 = m_Gameplay.FindAction("Brush_2", throwIfNotFound: true);
         m_Gameplay_Brush_3 = m_Gameplay.FindAction("Brush_3", throwIfNotFound: true);
@@ -419,7 +440,8 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Camera_Rotation;
     private readonly InputAction m_Gameplay_Camera_Zoom;
     private readonly InputAction m_Gameplay_Mouse_Position;
-    private readonly InputAction m_Gameplay_Mouse_LClicked;
+    private readonly InputAction m_Gameplay_Select;
+    private readonly InputAction m_Gameplay_Cancel;
     private readonly InputAction m_Gameplay_Brush_1;
     private readonly InputAction m_Gameplay_Brush_2;
     private readonly InputAction m_Gameplay_Brush_3;
@@ -451,9 +473,13 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         /// </summary>
         public InputAction @Mouse_Position => m_Wrapper.m_Gameplay_Mouse_Position;
         /// <summary>
-        /// Provides access to the underlying input action "Gameplay/Mouse_LClicked".
+        /// Provides access to the underlying input action "Gameplay/Select".
         /// </summary>
-        public InputAction @Mouse_LClicked => m_Wrapper.m_Gameplay_Mouse_LClicked;
+        public InputAction @Select => m_Wrapper.m_Gameplay_Select;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay/Cancel".
+        /// </summary>
+        public InputAction @Cancel => m_Wrapper.m_Gameplay_Cancel;
         /// <summary>
         /// Provides access to the underlying input action "Gameplay/Brush_1".
         /// </summary>
@@ -504,9 +530,12 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
             @Mouse_Position.started += instance.OnMouse_Position;
             @Mouse_Position.performed += instance.OnMouse_Position;
             @Mouse_Position.canceled += instance.OnMouse_Position;
-            @Mouse_LClicked.started += instance.OnMouse_LClicked;
-            @Mouse_LClicked.performed += instance.OnMouse_LClicked;
-            @Mouse_LClicked.canceled += instance.OnMouse_LClicked;
+            @Select.started += instance.OnSelect;
+            @Select.performed += instance.OnSelect;
+            @Select.canceled += instance.OnSelect;
+            @Cancel.started += instance.OnCancel;
+            @Cancel.performed += instance.OnCancel;
+            @Cancel.canceled += instance.OnCancel;
             @Brush_1.started += instance.OnBrush_1;
             @Brush_1.performed += instance.OnBrush_1;
             @Brush_1.canceled += instance.OnBrush_1;
@@ -539,9 +568,12 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
             @Mouse_Position.started -= instance.OnMouse_Position;
             @Mouse_Position.performed -= instance.OnMouse_Position;
             @Mouse_Position.canceled -= instance.OnMouse_Position;
-            @Mouse_LClicked.started -= instance.OnMouse_LClicked;
-            @Mouse_LClicked.performed -= instance.OnMouse_LClicked;
-            @Mouse_LClicked.canceled -= instance.OnMouse_LClicked;
+            @Select.started -= instance.OnSelect;
+            @Select.performed -= instance.OnSelect;
+            @Select.canceled -= instance.OnSelect;
+            @Cancel.started -= instance.OnCancel;
+            @Cancel.performed -= instance.OnCancel;
+            @Cancel.canceled -= instance.OnCancel;
             @Brush_1.started -= instance.OnBrush_1;
             @Brush_1.performed -= instance.OnBrush_1;
             @Brush_1.canceled -= instance.OnBrush_1;
@@ -620,12 +652,19 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnMouse_Position(InputAction.CallbackContext context);
         /// <summary>
-        /// Method invoked when associated input action "Mouse_LClicked" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// Method invoked when associated input action "Select" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>
         /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
-        void OnMouse_LClicked(InputAction.CallbackContext context);
+        void OnSelect(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "Cancel" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnCancel(InputAction.CallbackContext context);
         /// <summary>
         /// Method invoked when associated input action "Brush_1" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
         /// </summary>

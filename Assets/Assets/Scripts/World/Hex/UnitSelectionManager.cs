@@ -10,16 +10,22 @@ public class UnitSelectionManager : MonoBehaviour
     }
 
     public event Action<HexUnit> UnitSelected;
+    public event Action<HexUnit> UnitDeselected;
 
     public void SelectUnit(HexUnit unit)
     {
-        if (SelectedUnit == unit)
-        {
-            Debug.Log("Unit is Null");
+        if (unit == null)
             return;
+
+        if (SelectedUnit == unit)
+            return;
+
+        if (SelectedUnit != null)
+        {
+            UnitDeselected?.Invoke(
+                SelectedUnit);
         }
 
-        Debug.Log("Unit is not Null");
         SelectedUnit = unit;
 
         UnitSelected?.Invoke(unit);
@@ -27,8 +33,13 @@ public class UnitSelectionManager : MonoBehaviour
 
     public void ClearSelection()
     {
+        if (SelectedUnit == null)
+            return;
+
+        HexUnit previous = SelectedUnit;
+
         SelectedUnit = null;
 
-        UnitSelected?.Invoke(null);
+        UnitDeselected?.Invoke(previous);
     }
 }
