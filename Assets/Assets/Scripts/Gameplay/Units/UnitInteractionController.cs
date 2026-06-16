@@ -10,35 +10,26 @@ public class UnitInteractionController : MonoBehaviour
     [SerializeField]
     private HexPathRules pathRules;
 
+    [SerializeField]
+    private float dragThreshold = 5f;
+
     private InputManager inputManager;
-
     private HexGridManager gridManager;
-
     private HexSelectionManager cellSelection;
-
     private UnitSelectionManager unitSelection;
-
     private MovementRangeVisualizer rangeVisualizer;
-
     private PathPreviewSystem pathPreview;
-
     private UnitMovementController movementController;
 
     private MovementRangeCalculator rangeCalculator;
-
     private HexPathfinder pathfinder;
-
     private HexRaycaster raycaster;
 
     private HashSet<HexCell> reachableCells =
         new();
 
     private Vector2 rightClickStartPosition;
-
     private bool isDraggingRightClick;
-
-    [SerializeField]
-    private float dragThreshold = 5f;
 
     private void Awake()
     {
@@ -92,6 +83,9 @@ public class UnitInteractionController : MonoBehaviour
 
         unitSelection.UnitSelected += OnUnitSelected;
         unitSelection.UnitDeselected += OnUnitDeselected;
+
+        movementController.MovementStarted += OnMovementStarted;
+        movementController.MovementFinished += OnMovementFinished;
     }
 
     private void Update()
@@ -142,6 +136,12 @@ public class UnitInteractionController : MonoBehaviour
             unitSelection.UnitSelected -= OnUnitSelected;
             unitSelection.UnitDeselected -= OnUnitDeselected;
         }
+
+        if (movementController != null)
+        {
+            movementController.MovementStarted -= OnMovementStarted;
+            movementController.MovementFinished -= OnMovementFinished;
+        }
     }
 
     private void OnRightMouseStarted(
@@ -180,7 +180,8 @@ public class UnitInteractionController : MonoBehaviour
 
         if (unitView != null)
         {
-            unitSelection.SelectUnit(unitView.Unit);
+            unitSelection.SelectUnit(
+                unitView.Unit);
 
             return;
         }
@@ -194,7 +195,8 @@ public class UnitInteractionController : MonoBehaviour
             return;
         }
 
-        HexUnit selectedUnit = unitSelection.SelectedUnit;
+        HexUnit selectedUnit =
+            unitSelection.SelectedUnit;
 
         if (selectedUnit == null)
         {
@@ -217,22 +219,14 @@ public class UnitInteractionController : MonoBehaviour
                 selectedUnit.CurrentCell,
                 cellView.Cell);
 
-        rangeVisualizer.Clear();
-        pathPreview.Clear();
+        if (path == null)
+        {
+            return;
+        }
+
         movementController.MoveUnit(
             selectedUnit,
             path);
-
-        reachableCells =
-            rangeCalculator
-                .GetReachableCells(
-                    selectedUnit);
-
-        if(selectedUnit.IsMoving)
-            return;
-
-        rangeVisualizer.ShowRange(reachableCells);
-        pathPreview.Clear();
     }
 
     private void OnUnitSelected(
@@ -308,5 +302,36 @@ public class UnitInteractionController : MonoBehaviour
         pathPreview.ShowPath(
             path,
             valid);
+    }
+
+    private void OnMovementStarted(
+        HexUnit unit)
+    {
+        pathPreview.Clear();
+
+        rangeVisualizer.Clear();
+
+        reachableCells.Clear();
+    }
+
+    private void OnMovementFinished(
+        HexUnit unit)
+    {
+        if (unitSelection.SelectedUnit != unit)
+        {
+            return;
+        }
+
+        reachableCells =
+            rangeCalculator
+                .GetReachableCells(
+                    unit);
+
+        rangeVisualizer.ShowRange(
+            reachableCells);
+
+        pathPreview.Clear();
+
+        unitSelection.ClearSelection();
     }
 }

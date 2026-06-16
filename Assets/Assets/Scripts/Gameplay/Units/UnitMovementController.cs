@@ -1,15 +1,20 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class UnitMovementController : MonoBehaviour
 {
+    public event Action<HexUnit> MovementStarted;
+    public event Action<HexUnit> MovementFinished;
+
     [SerializeField]
     private float moveSpeed = 8f;
 
     private UnitManager unitManager;
 
-    public void Initialize(UnitManager unitManager)
+    public void Initialize(
+        UnitManager unitManager)
     {
         this.unitManager = unitManager;
     }
@@ -18,6 +23,17 @@ public class UnitMovementController : MonoBehaviour
         HexUnit unit,
         List<HexCell> path)
     {
+        if (unit == null)
+        {
+            return;
+        }
+
+        if (path == null ||
+            path.Count == 0)
+        {
+            return;
+        }
+
         if (unit.IsMoving)
         {
             return;
@@ -35,6 +51,8 @@ public class UnitMovementController : MonoBehaviour
     {
         unit.SetMoving(true);
 
+        MovementStarted?.Invoke(unit);
+
         foreach (HexCell cell in path)
         {
             yield return MoveToCell(
@@ -43,6 +61,8 @@ public class UnitMovementController : MonoBehaviour
         }
 
         unit.SetMoving(false);
+
+        MovementFinished?.Invoke(unit);
     }
 
     private IEnumerator MoveToCell(
