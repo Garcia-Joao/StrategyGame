@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class HexGridManager : MonoBehaviour
@@ -49,9 +48,11 @@ public class HexGridManager : MonoBehaviour
         GenerateGrid();
     }
 
-    public void Initialize(UnitManager unitManager)
+    public void Initialize(
+        UnitManager unitManager)
     {
-        this.unitManager = unitManager;
+        this.unitManager =
+            unitManager;
 
         Debug.Assert(
             unitManager != null,
@@ -61,82 +62,6 @@ public class HexGridManager : MonoBehaviour
     private void Start()
     {
         SpawnVisuals();
-
-        List<HexCell> cells = Grid.GetAllCells().ToList();
-
-        if (cells.Count < 2)
-        {
-            Debug.LogError(
-                "Not enough cells to spawn units.");
-
-            return;
-        }
-
-        Player localPlayer =
-            new Player(
-                "Player1",
-                Team.Team1,
-                true);
-
-        //Player enemyPlayer = new Player("Enemy",Team.Team2);
-
-        unitManager.RegisterPlayer(
-            localPlayer);
-
-        //unitManager.RegisterPlayer(enemyPlayer);
-
-        HexCell playerCell = GetRandomFreeCell(cells);
-
-        HexCell enemyCell = GetRandomFreeCell(cells);
-
-        UnitStats playerStats =
-            new UnitStats
-            {
-                Strength = 5,
-                Dexterity = 5,
-                Reflexes = 5,
-                Vitality = 5,
-                MovementPoints = 8,
-                MoveSpeed = 12f
-            };
-
-        playerStats.ResetMovement();
-
-        UnitStats enemyStats =
-            new UnitStats
-            {
-                Strength = 3,
-                Dexterity = 3,
-                Reflexes = 3,
-                Vitality = 3,
-                MovementPoints = 6,
-                MoveSpeed = 10f
-            };
-
-        enemyStats.ResetMovement();
-
-        unitManager.SpawnUnit(playerCell,localPlayer,playerStats);
-
-        //unitManager.SpawnUnit(enemyCell,enemyPlayer,enemyStats);
-    }
-
-    private HexCell GetRandomFreeCell(
-    List<HexCell> cells)
-    {
-        List<HexCell> freeCells =
-            cells
-                .Where(x => !x.IsOccupied)
-                .ToList();
-
-        if (freeCells.Count == 0)
-        {
-            return null;
-        }
-
-        return freeCells[
-            Random.Range(
-                0,
-                freeCells.Count)];
     }
 
     private void GenerateGrid()
@@ -158,7 +83,10 @@ public class HexGridManager : MonoBehaviour
                 int y = -x - z;
 
                 HexCoord coordinate =
-                    new HexCoord(x, y, z);
+                    new HexCoord(
+                        x,
+                        y,
+                        z);
 
                 float noiseValue =
                     Mathf.PerlinNoise(
@@ -166,7 +94,8 @@ public class HexGridManager : MonoBehaviour
                         coordinate.Z * noiseScale + noiseOffsetY);
 
                 float height =
-                    noiseValue * maxTerrainHeight;
+                    noiseValue *
+                    maxTerrainHeight;
 
                 HexCell cell =
                     new HexCell(
@@ -180,7 +109,8 @@ public class HexGridManager : MonoBehaviour
 
     private void SpawnVisuals()
     {
-        foreach (HexCell cell in grid.GetAllCells())
+        foreach (HexCell cell
+                 in grid.GetAllCells())
         {
             GameObject instance =
                 Instantiate(
@@ -194,7 +124,9 @@ public class HexGridManager : MonoBehaviour
 
             view.Initialize(cell);
 
-            cellViews.Add(cell, view);
+            cellViews.Add(
+                cell,
+                view);
         }
     }
 

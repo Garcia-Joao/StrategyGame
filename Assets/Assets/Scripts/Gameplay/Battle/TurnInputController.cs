@@ -3,18 +3,14 @@ using UnityEngine;
 public class TurnInputController : MonoBehaviour
 {
     private InputManager inputManager;
-
-    private TurnManager turnManager;
+    private GameStateMachine stateMachine;
 
     public void Initialize(
         InputManager inputManager,
-        TurnManager turnManager)
+        GameStateMachine stateMachine)
     {
-        this.inputManager =
-            inputManager;
-
-        this.turnManager =
-            turnManager;
+        this.inputManager = inputManager;
+        this.stateMachine = stateMachine;
 
         inputManager.EndTurnAction.ActionStarted += OnEndTurnPressed;
     }
@@ -23,17 +19,14 @@ public class TurnInputController : MonoBehaviour
     {
         if (inputManager != null)
         {
-            inputManager
-                .EndTurnAction
-                .ActionStarted -=
-                    OnEndTurnPressed;
+            inputManager.EndTurnAction.ActionStarted -= OnEndTurnPressed;
         }
     }
 
-    private void OnEndTurnPressed(
-        float _)
+    private void OnEndTurnPressed(float _)
     {
         Debug.Log("End Turn Pressed");
-        turnManager.EndCurrentTurn();
+
+        stateMachine.SetState(GameState.WorldPhase);
     }
 }

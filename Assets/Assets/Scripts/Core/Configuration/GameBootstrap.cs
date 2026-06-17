@@ -1,3 +1,4 @@
+using System.Linq;
 using UnityEngine;
 
 [DefaultExecutionOrder(-100)]
@@ -15,8 +16,7 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private TurnManager turnManager;
     [SerializeField] private DebugManager debugManager;
     [SerializeField] private TurnInputController turnInputController;
-
-    private WorldTurnManager worldTurnManager;
+    [SerializeField] private GameStateMachine stateMachine;
 
     [Header("Consumers")]
     [SerializeField] private CameraController cameraController;
@@ -24,17 +24,29 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private UnitInteractionController unitInteractionController;
     [SerializeField] private TerrainBrushManager terrainBrushManager;
 
+    [Header("Debug")]
+    [SerializeField]
+    private bool spawnDebugUnit = true;
+
+    private WorldTurnManager worldTurnManager;
 
     private void Start()
     {
-        worldTurnManager = new WorldTurnManager();
+        stateMachine.SetState(GameState.Initializing);
+        worldTurnManager =
+            new WorldTurnManager();
 
-        gridManager.Initialize(unitManager);
+        gridManager.Initialize(
+            unitManager);
 
-        movementRangeVisualizer.Initialize(gridManager);
-        pathPreviewSystem.Initialize(gridManager);
+        movementRangeVisualizer.Initialize(
+            gridManager);
 
-        cameraController.Initialize(inputManager);
+        pathPreviewSystem.Initialize(
+            gridManager);
+
+        cameraController.Initialize(
+            inputManager);
 
         hexMouseController.Initialize(
             inputManager,
@@ -45,20 +57,61 @@ public class GameBootstrap : MonoBehaviour
             gridManager,
             hexSelectionManager);
 
-        unitInteractionController.Initialize(
-            inputManager,
-            gridManager,
-            hexSelectionManager,
+        debugManager.Initialize(
             unitSelectionManager,
-            movementRangeVisualizer,
-            pathPreviewSystem,
-            unitMovementController,
             unitManager);
 
-        unitMovementController.Initialize(unitManager, unitInteractionController.PathRules);
+        turnInputController.Initialize(
+            inputManager, stateMachine);
 
-        debugManager.Initialize(unitSelectionManager, unitManager);
-        turnManager.Initialize(unitManager, unitSelectionManager, worldTurnManager, cameraController, gridManager);
-        turnInputController.Initialize(inputManager, turnManager);
+        unitSelectionManager.Initialize(
+            unitManager,
+            movementRangeVisualizer);
+
+        if (spawnDebugUnit)
+        {
+            stateMachine.SetState(GameState.Spawning);
+            SpawnDebugUnits();
+        }
+
+        stateMachine.SetState(GameState.WorldPhase);
+    }
+
+    private void SpawnDebugUnits()
+    {
+        Player localPlayer =
+            new Player(
+                "Player1",
+                Team.Team1,
+                true);
+
+        unitManager.RegisterPlayer(
+            localPlayer);
+
+        unitManager.SetLocalPlayer(localPlayer);
+
+        HexCell spawnCell =
+            gridManager.Grid
+                .GetAllCells()
+                .OrderBy(_ => Random.value)
+                .First();
+
+        UnitStats stats =
+            new UnitStats
+            {
+                Strength = 5,
+                Dexterity = 5,
+                Reflexes = 5,
+                Vitality = 5,
+                MovementPoints = 8,
+                MoveSpeed = 12f
+            };
+
+        stats.ResetMovement();
+
+        unitManager.SpawnUnit(
+            spawnCell,
+            localPlayer,
+            stats);
     }
 }

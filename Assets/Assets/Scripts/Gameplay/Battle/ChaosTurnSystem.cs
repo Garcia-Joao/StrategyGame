@@ -46,18 +46,20 @@ public class ChaosTurnSystem : ITurnSystem
     private readonly WorldTurnManager worldTurnManager;
     private readonly UnitManager unitManager;
     private readonly UnitSelectionManager selectionManager;
-    private readonly Player localPlayer;
     private readonly CameraController cameraController;
+    private readonly UnitInteractionController unitInteractionController;
 
-    public ChaosTurnSystem(UnitManager unitManager, UnitSelectionManager selectionManager, WorldTurnManager worldTurnManager,
-                           Player localPlayer, CameraController cameraController)
+    public ChaosTurnSystem(UnitManager unitManager, UnitSelectionManager selectionManager,
+                           WorldTurnManager worldTurnManager, CameraController cameraController,
+                           UnitInteractionController unitInteractionController)
     {
         this.unitManager = unitManager;
         this.selectionManager = selectionManager;
         this.worldTurnManager = worldTurnManager;
-
-        this.localPlayer = localPlayer;
+        this.unitInteractionController = unitInteractionController;
         this.cameraController = cameraController;
+
+        Debug.Log($"Local Player: {unitManager.LocalPlayer?.Name ?? "NULL"}");
     }
 
     public void StartBattle()
@@ -69,22 +71,25 @@ public class ChaosTurnSystem : ITurnSystem
 
     private void StartRound()
     {
-        CurrentPhase =
-            BattlePhase.World;
+        CurrentPhase = BattlePhase.World;
 
-        RoundStarted?.Invoke(
-            CurrentRound);
+        RoundStarted?.Invoke(CurrentRound);
 
         WorldPhaseStarted?.Invoke();
-
         WorldPhaseFinished?.Invoke();
 
-        StartTeamPhase(
-            Team.Team1);
+        if (!TryStartTeamPhase(Team.Team1))
+        {
+            if (!TryStartTeamPhase(Team.Team2))
+            {
+                EndRound();
+            }
+        }
     }
 
     private void StartTeamPhase(Team team)
     {
+        Debug.Log($"LocalPlayer = {unitManager.LocalPlayer?.Name ?? "NULL"}");
         CurrentPhase =
             BattlePhase.Team;
 
@@ -101,41 +106,35 @@ public class ChaosTurnSystem : ITurnSystem
         TeamPhaseStarted?.Invoke(team);
 
         SelectNextAvailableUnit();
+
+        unitInteractionController.RefreshSelection();
     }
 
     public void EndCurrentTurn()
     {
-        HexUnit unit =
-            selectionManager.SelectedUnit;
+        HexUnit unit = selectionManager.SelectedUnit;
 
         if (unit == null)
-        {
             return;
-        }
 
-        if (unit.Owner != localPlayer)
-        {
+        if (unit.Owner != unitManager.LocalPlayer)
             return;
-        }
 
         if (unit.TurnEnded)
-        {
             return;
-        }
 
         unit.EndTurn();
-
         UnitTurnFinished?.Invoke(unit);
 
-        foreach (HexUnit other
-                 in unitManager.GetUnits(localPlayer))
+        foreach (HexUnit other in unitManager.GetUnits(CurrentTeam))
         {
+            if (other.Owner != unitManager.LocalPlayer)
+                continue;
+
             if (!other.TurnEnded)
             {
                 selectionManager.SelectUnit(other);
-
                 cameraController.FocusOn(other);
-
                 return;
             }
         }
@@ -145,32 +144,26 @@ public class ChaosTurnSystem : ITurnSystem
 
     private void SelectNextAvailableUnit()
     {
-        foreach (HexUnit unit
-                 in unitManager.GetUnits(localPlayer))
+        foreach (HexUnit unit in unitManager.GetUnits(CurrentTeam))
         {
-            if (unit.TurnEnded)
-            {
+            if (unit.Owner != unitManager.LocalPlayer)
                 continue;
-            }
+
+            if (unit.TurnEnded)
+                continue;
 
             selectionManager.SelectUnit(unit);
-
             cameraController.FocusOn(unit);
-
             return;
         }
     }
 
     private void CheckPhaseCompletion()
     {
-        foreach (HexUnit unit
-                 in unitManager.GetUnits(
-                     CurrentTeam))
+        foreach (HexUnit unit in unitManager.GetUnits(CurrentTeam))
         {
             if (!unit.TurnEnded)
-            {
                 return;
-            }
         }
 
         EndCurrentTeamPhase();
@@ -178,15 +171,14 @@ public class ChaosTurnSystem : ITurnSystem
 
     private void EndCurrentTeamPhase()
     {
-        TeamPhaseFinished?.Invoke(
-            CurrentTeam);
+        TeamPhaseFinished?.Invoke(CurrentTeam);
 
-        if (CurrentTeam ==
-            Team.Team1)
+        if (CurrentTeam == Team.Team1)
         {
-            StartTeamPhase(
-                Team.Team2);
+            if (TryStartTeamPhase(Team.Team2))
+                return;
 
+            EndRound();
             return;
         }
 
@@ -216,5 +208,17 @@ public class ChaosTurnSystem : ITurnSystem
         }
 
         WorldPhaseFinished?.Invoke();
+    }
+
+    private bool TryStartTeamPhase(Team team)
+    {
+        if (!unitManager.HasAnyUnit(team))
+        {
+            Debug.Log($"Skipping {team} - no units alive");
+            return false;
+        }
+
+        StartTeamPhase(team);
+        return true;
     }
 }

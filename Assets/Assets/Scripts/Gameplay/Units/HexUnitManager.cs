@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
@@ -19,17 +20,23 @@ public class UnitManager : MonoBehaviour
         private set;
     }
 
-    private readonly List<HexUnit>
-        units = new();
+    private readonly List<HexUnit> units = new();
 
-    private readonly List<Player>
-        players = new();
+    private readonly List<Player> players = new();
 
-    public IReadOnlyList<HexUnit>
-        Units => units;
+    public IReadOnlyList<HexUnit> Units => units;
 
-    public IReadOnlyList<Player>
-        Players => players;
+    public IReadOnlyList<Player> Players => players;
+
+    public IEnumerable<HexUnit> GetUnits(Team team)
+    {
+        return units.Where(x => x.Team == team);
+    }
+
+    public bool HasAnyUnit(Team team)
+    {
+        return units.Any(x => x.Team == team);
+    }
 
     public void RegisterPlayer(
         Player player)
@@ -76,6 +83,8 @@ public class UnitManager : MonoBehaviour
                 owner,
                 stats);
 
+        owner.AddUnit(unit);
+
         unit.SetCell(cell);
         unit.SetView(view);
 
@@ -90,16 +99,14 @@ public class UnitManager : MonoBehaviour
     }
 
     public IEnumerable<HexUnit> GetUnits(
-        Team team)
-    {
-        return units.Where(
-            x => x.Team == team);
-    }
-
-    public IEnumerable<HexUnit> GetUnits(
         Player player)
     {
         return units.Where(
             x => x.Owner == player);
+    }
+
+    internal void SetLocalPlayer(Player localPlayer)
+    {
+        LocalPlayer = localPlayer;
     }
 }

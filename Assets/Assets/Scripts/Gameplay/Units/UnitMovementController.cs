@@ -9,74 +9,52 @@ public class UnitMovementController : MonoBehaviour
     public event Action<HexUnit> MovementFinished;
 
     private UnitManager unitManager;
-
     private HexPathRules pathRules;
+    private GameStateMachine stateMachine;
 
     public void Initialize(
         UnitManager unitManager,
-        HexPathRules pathRules)
+        HexPathRules pathRules,
+        GameStateMachine stateMachine)
     {
         this.unitManager = unitManager;
         this.pathRules = pathRules;
+        this.stateMachine = stateMachine;
     }
 
-    public void MoveUnit(
-        HexUnit unit,
-        List<HexCell> path)
+    public void MoveUnit(HexUnit unit, List<HexCell> path)
     {
-        if (unit == null)
-        {
+        if (unit == null || path == null || path.Count < 2)
             return;
-        }
-
-        if (path == null ||
-            path.Count < 2)
-        {
-            return;
-        }
 
         if (unit.IsMoving)
-        {
             return;
-        }
 
-        int pathCost =
-            CalculatePathCost(path);
+        int pathCost = CalculatePathCost(path);
 
-        if (pathCost >
-            unit.Stats.CurrentMovementPoints)
-        {
+        if (pathCost > unit.Stats.CurrentMovementPoints)
             return;
-        }
 
-        unit.Stats.ConsumeMovement(
-            pathCost);
+        stateMachine.SetState(GameState.UnitMoving);
 
-        StartCoroutine(
-            MoveRoutine(
-                unit,
-                path));
+        unit.Stats.ConsumeMovement(pathCost);
+
+        StartCoroutine(MoveRoutine(unit, path));
     }
 
-    private int CalculatePathCost(
-        IReadOnlyList<HexCell> path)
+    private int CalculatePathCost(IReadOnlyList<HexCell> path)
     {
         int totalCost = 0;
 
         for (int i = 1; i < path.Count; i++)
         {
-            totalCost +=
-                pathRules.GetMoveCost(
-                    path[i - 1],
-                    path[i]);
+            totalCost += pathRules.GetMoveCost(path[i - 1], path[i]);
         }
 
         return totalCost;
     }
 
-    private IEnumerator MoveRoutine(
-        HexUnit unit,
-        List<HexCell> path)
+    private IEnumerator MoveRoutine(HexUnit unit, List<HexCell> path)
     {
         unit.SetMoving(true);
 
@@ -84,50 +62,36 @@ public class UnitMovementController : MonoBehaviour
 
         for (int i = 1; i < path.Count; i++)
         {
-            yield return MoveToCell(
-                unit,
-                path[i]);
+            yield return MoveToCell(unit, path[i]);
         }
 
         unit.SetMoving(false);
 
         MovementFinished?.Invoke(unit);
+
+        stateMachine.SetState(GameState.UnitSelected);
     }
 
-    private IEnumerator MoveToCell(
-        HexUnit unit,
-        HexCell targetCell)
+    private IEnumerator MoveToCell(HexUnit unit, HexCell targetCell)
     {
-        Transform transform =
-            unit.View.transform;
+        Transform t = unit.View.transform;
 
-        float moveSpeed =
-            unit.Stats.MoveSpeed;
+        float moveSpeed = unit.Stats.MoveSpeed;
 
         Vector3 targetPosition =
-            targetCell.WorldPosition +
-            Vector3.up * unitManager.UnitHeightOffset;
+            targetCell.WorldPosition + Vector3.up * unitManager.UnitHeightOffset;
 
-        while (
-            Vector3.Distance(
-                transform.position,
-                targetPosition)
-            > 0.02f)
+        while (Vector3.Distance(t.position, targetPosition) > 0.02f)
         {
-            transform.position =
-                Vector3.MoveTowards(
-                    transform.position,
-                    targetPosition,
-                    moveSpeed *
-                    Time.deltaTime);
+            t.position = Vector3.MoveTowards(
+                t.position,
+                targetPosition,
+                moveSpeed * Time.deltaTime);
 
             yield return null;
         }
 
-        transform.position =
-            targetPosition;
-
-        unit.SetCell(
-            targetCell);
+        t.position = targetPosition;
+        unit.SetCell(targetCell);
     }
 }

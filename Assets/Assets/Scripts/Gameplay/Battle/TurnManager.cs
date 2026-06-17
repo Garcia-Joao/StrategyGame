@@ -2,52 +2,40 @@ using UnityEngine;
 
 public class TurnManager : MonoBehaviour
 {
-    [SerializeField]
-    private TurnMode turnMode = TurnMode.Chaos;
-    private WorldTurnManager worldTurnManager;
-    private ITurnSystem activeSystem;
+    private GameStateMachine stateMachine;
 
-    public ITurnSystem ActiveSystem =>
-        activeSystem;
-
-    public void Initialize(
-        UnitManager unitManager,
-        UnitSelectionManager selectionManager,
-        WorldTurnManager worldTurnManager,
-        CameraController cameraController,
-        HexGridManager gridManager)
+    public void Initialize(GameStateMachine stateMachine)
     {
-        this.worldTurnManager =
-            worldTurnManager;
-
-        switch (turnMode)
-        {
-            case TurnMode.Chaos:
-
-                activeSystem =
-                    new ChaosTurnSystem(
-                        unitManager,
-                        selectionManager,
-                        worldTurnManager,
-                        unitManager.LocalPlayer,
-                        cameraController);
-
-                break;
-
-            case TurnMode.Dexterity:
-
-                activeSystem =
-                    new DexTurnSystem();
-
-                break;
-        }
-
-        activeSystem.StartBattle();
+        this.stateMachine = stateMachine;
+        stateMachine.StateChanged += OnStateChanged;
     }
 
-    public void EndCurrentTurn()
+    private void OnStateChanged(GameState state)
     {
-        Debug.Log("Ending Current Turn");
-        activeSystem.EndCurrentTurn();
+        switch (state)
+        {
+            case GameState.WorldPhase:
+                ExecuteWorldPhase();
+                break;
+
+            case GameState.TeamTurn:
+                StartTeamTurn();
+                break;
+        }
+    }
+
+    private void StartTeamTurn()
+    {
+        Debug.Log("Team Turn Started");
+
+        // aqui você inicia lógica de turno (select unit etc)
+        stateMachine.SetState(GameState.UnitSelected);
+    }
+
+    private void ExecuteWorldPhase()
+    {
+        Debug.Log("World Phase Executed");
+
+        stateMachine.SetState(GameState.TeamTurn);
     }
 }

@@ -109,59 +109,52 @@ public class CameraController : MonoBehaviour
 
     private Coroutine focusRoutine;
 
-    public void FocusOn(
-        Vector3 worldPosition)
+    public void FocusOn(Vector3 worldPosition)
     {
-        Vector3 pos =
-            transform.position;
+        if (focusRoutine != null)
+            StopCoroutine(focusRoutine);
 
-        pos.x = worldPosition.x;
-        pos.z = worldPosition.z;
-
-        transform.position = pos;
+        focusRoutine = StartCoroutine(FocusRoutine(worldPosition));
     }
 
-    public void FocusOn(
-        HexUnit unit)
+    public void FocusOn(HexUnit unit)
     {
         if (unit == null)
         {
             return;
         }
 
-        FocusOn(
-            unit.CurrentCell.WorldPosition);
+        FocusOn(unit.CurrentCell.WorldPosition);
     }
 
-    private IEnumerator FocusRoutine(
-    Vector3 targetPosition)
+    private IEnumerator FocusRoutine(Vector3 targetPosition)
     {
-        Vector3 start =
-            transform.position;
+        Vector3 start = transform.position;
 
-        Vector3 end =
-            start;
+        Vector3 end = new Vector3(
+            targetPosition.x,
+            start.y,
+            targetPosition.z
+        );
 
-        end.x =
-            targetPosition.x;
-
-        end.z =
-            targetPosition.z;
-
+        float duration = 0.25f;
         float t = 0f;
 
         while (t < 1f)
         {
-            t += Time.deltaTime * 3f;
+            t += Time.deltaTime / duration;
 
-            transform.position =
-                Vector3.Lerp(
-                    start,
-                    end,
-                    t);
+            transform.position = Vector3.Lerp(
+                start,
+                end,
+                Mathf.SmoothStep(0f, 1f, t)
+            );
 
             yield return null;
         }
+
+        transform.position = end;
+        focusRoutine = null;
     }
 
     private void HandleZoom()

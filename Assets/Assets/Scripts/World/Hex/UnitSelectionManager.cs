@@ -14,6 +14,16 @@ public class UnitSelectionManager : MonoBehaviour
     public event Action<HexUnit> UnitSelected;
     public event Action<HexUnit> UnitDeselected;
 
+    private UnitManager unitManager;
+    private MovementRangeVisualizer movementRangeVisualizer;
+
+    public void Initialize(UnitManager unitManager, MovementRangeVisualizer movementRangeVisualizer)
+    {
+        this.unitManager = unitManager;
+        this.movementRangeVisualizer = movementRangeVisualizer;
+    }
+
+
     public void SelectUnit(HexUnit unit)
     {
         if (unit == null)
@@ -24,8 +34,7 @@ public class UnitSelectionManager : MonoBehaviour
 
         if (SelectedUnit != null)
         {
-            UnitDeselected?.Invoke(
-                SelectedUnit);
+            UnitDeselected?.Invoke(SelectedUnit);
         }
 
         SelectedUnit = unit;

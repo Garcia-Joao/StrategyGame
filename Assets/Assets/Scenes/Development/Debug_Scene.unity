@@ -133,7 +133,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 22400762, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: -0.000015258789
+      value: -0.00002670288
       objectReference: {fileID: 0}
     - target: {fileID: 22426080, guid: 67117722a812a2e46ab8cb8eafbf5f5e, type: 3}
       propertyPath: m_AnchorMax.x
@@ -505,7 +505,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7efb22d3cff5ef745b5093ae818408bd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::TurnManager
-  turnMode: 0
 --- !u!1 &362579485
 GameObject:
   m_ObjectHideFlags: 0
@@ -670,6 +669,50 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b41f803c8c6177648a3fd907af30e0f5, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexSelectionManager
+--- !u!1 &625484167
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 625484168}
+  - component: {fileID: 625484169}
+  m_Layer: 0
+  m_Name: GameStateMachine
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &625484168
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 625484167}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &625484169
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 625484167}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 94bb76c3cd99e124db4b953cecf890fe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameStateMachine
 --- !u!1 &776911109
 GameObject:
   m_ObjectHideFlags: 0
@@ -725,10 +768,12 @@ MonoBehaviour:
   turnManager: {fileID: 166305517}
   debugManager: {fileID: 1438769590}
   turnInputController: {fileID: 166305516}
+  stateMachine: {fileID: 625484169}
   cameraController: {fileID: 362579490}
   hexMouseController: {fileID: 1414551371}
   unitInteractionController: {fileID: 1071663967}
   terrainBrushManager: {fileID: 1039648610}
+  spawnDebugUnit: 1
 --- !u!1 &1039648606
 GameObject:
   m_ObjectHideFlags: 0
@@ -839,7 +884,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::UnitInteractionController
   targetCamera: {fileID: 2113772144}
   pathRules: {fileID: 11400000, guid: 033c432d441e29a4081c6b691f22e29c, type: 2}
-  dragThreshold: 5
 --- !u!114 &1071663968
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1512,3 +1556,4 @@ SceneRoots:
   - {fileID: 1438769580}
   - {fileID: 776911110}
   - {fileID: 114116862}
+  - {fileID: 625484168}

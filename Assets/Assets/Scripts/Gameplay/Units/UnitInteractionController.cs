@@ -1,21 +1,14 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 
 public class UnitInteractionController : MonoBehaviour
 {
-    [SerializeField]
-    private Camera targetCamera;
+    [SerializeField] private Camera targetCamera;
+    [SerializeField] private HexPathRules pathRules;
 
-    [SerializeField]
-    private HexPathRules pathRules;
-    public HexPathRules PathRules
-    {
-        get => pathRules;
-    }
-
-    [SerializeField]
-    private float dragThreshold = 5f;
+    public HexPathRules PathRules => pathRules;
 
     private InputManager inputManager;
     private HexGridManager gridManager;
@@ -25,23 +18,18 @@ public class UnitInteractionController : MonoBehaviour
     private MovementRangeVisualizer rangeVisualizer;
     private PathPreviewSystem pathPreview;
     private UnitMovementController movementController;
+    private GameStateMachine stateMachine;
 
     private MovementRangeCalculator rangeCalculator;
     private HexPathfinder pathfinder;
     private HexRaycaster raycaster;
 
-    private HashSet<HexCell> reachableCells =
-        new();
-
-    private Vector2 rightClickStartPosition;
-    private bool isDraggingRightClick;
+    private HashSet<HexCell> reachableCells = new();
 
     private void Awake()
     {
         if (targetCamera == null)
-        {
             targetCamera = Camera.main;
-        }
     }
 
     public void Initialize(
@@ -52,7 +40,8 @@ public class UnitInteractionController : MonoBehaviour
         MovementRangeVisualizer rangeVisualizer,
         PathPreviewSystem pathPreview,
         UnitMovementController movementController,
-        UnitManager unitManager)
+        UnitManager unitManager,
+        GameStateMachine stateMachine)
     {
         this.inputManager = inputManager;
         this.gridManager = gridManager;
@@ -62,29 +51,13 @@ public class UnitInteractionController : MonoBehaviour
         this.pathPreview = pathPreview;
         this.movementController = movementController;
         this.unitManager = unitManager;
+        this.stateMachine = stateMachine;
 
-        Debug.Assert(gridManager != null, "GridManager NULL");
-        Debug.Assert(gridManager.Grid != null, "Grid NULL");
-        Debug.Assert(pathRules != null, "PathRules NULL");
-
-        pathfinder =
-            new HexPathfinder(
-                gridManager.Grid,
-                pathRules);
-
-        rangeCalculator =
-            new MovementRangeCalculator(
-                gridManager.Grid,
-                pathRules);
-
-        raycaster =
-            new HexRaycaster(
-                targetCamera);
+        pathfinder = new HexPathfinder(gridManager.Grid, pathRules);
+        rangeCalculator = new MovementRangeCalculator(gridManager.Grid, pathRules);
+        raycaster = new HexRaycaster(targetCamera);
 
         inputManager.MouseSelectAction.ActionStarted += OnLeftClick;
-
-        inputManager.MouseCancelAction.ActionStarted += OnRightMouseStarted;
-        inputManager.MouseCancelAction.ActionCanceled += OnRightMouseReleased;
 
         cellSelection.CellHovered += OnCellHovered;
 
@@ -93,50 +66,14 @@ public class UnitInteractionController : MonoBehaviour
 
         movementController.MovementStarted += OnMovementStarted;
         movementController.MovementFinished += OnMovementFinished;
-    }
 
-    private void Update()
-    {
-        if (!Mouse.current.rightButton.isPressed)
-        {
-            return;
-        }
-
-        if (isDraggingRightClick)
-        {
-            return;
-        }
-
-        Vector2 currentPosition =
-            inputManager
-                .MousePositionAction
-                .GetCurrentValue();
-
-        float distance =
-            Vector2.Distance(
-                currentPosition,
-                rightClickStartPosition);
-
-        if (distance > dragThreshold)
-        {
-            isDraggingRightClick = true;
-        }
+        stateMachine.StateChanged += OnStateChanged;
     }
 
     private void OnDestroy()
     {
         if (inputManager != null)
-        {
             inputManager.MouseSelectAction.ActionStarted -= OnLeftClick;
-
-            inputManager.MouseCancelAction.ActionStarted -= OnRightMouseStarted;
-            inputManager.MouseCancelAction.ActionCanceled -= OnRightMouseReleased;
-        }
-
-        if (cellSelection != null)
-        {
-            cellSelection.CellHovered -= OnCellHovered;
-        }
 
         if (unitSelection != null)
         {
@@ -149,149 +86,67 @@ public class UnitInteractionController : MonoBehaviour
             movementController.MovementStarted -= OnMovementStarted;
             movementController.MovementFinished -= OnMovementFinished;
         }
+
+        if (stateMachine != null)
+            stateMachine.StateChanged -= OnStateChanged;
     }
 
-    private void OnRightMouseStarted(
-        float _)
-    {
-        rightClickStartPosition =
-            inputManager
-                .MousePositionAction
-                .GetCurrentValue();
-
-        isDraggingRightClick = false;
-    }
-
-    private void OnRightMouseReleased(float _)
-    {
-
-    }
+    // ---------------- INPUT ----------------
 
     private void OnLeftClick(float _)
     {
-        Vector2 mousePosition =
-            inputManager
-                .MousePositionAction
-                .GetCurrentValue();
+        Vector2 mouse = inputManager.MousePositionAction.GetCurrentValue();
 
-        HexUnitView unitView =
-            raycaster.RaycastUnit(
-                mousePosition);
+        HexUnitView unitView = raycaster.RaycastUnit(mouse);
 
         if (unitView != null)
         {
-            HexUnit unit =
-                unitView.Unit;
+            HexUnit unit = unitView.Unit;
 
             if (unit.Owner != unitManager.LocalPlayer)
-            {
                 return;
-            }
 
-            unitSelection.SelectUnit(
-                unit);
-
+            unitSelection.SelectUnit(unit);
             return;
         }
 
-        HexCellView cellView =
-            raycaster.RaycastCell(
-                mousePosition);
+        HexCellView cellView = raycaster.RaycastCell(mouse);
 
         if (cellView == null)
-        {
             return;
-        }
 
-        HexUnit selectedUnit =
-            unitSelection.SelectedUnit;
+        HexUnit selected = unitSelection.SelectedUnit;
 
-        if (selectedUnit == null)
-        {
+        if (selected == null || selected.IsMoving)
             return;
-        }
 
-        if (selectedUnit.IsMoving)
-        {
+        if (!reachableCells.Contains(cellView.Cell))
             return;
-        }
 
-        if (!reachableCells.Contains(
-                cellView.Cell))
-        {
-            return;
-        }
-
-        List<HexCell> path =
-            pathfinder.FindPath(
-                selectedUnit.CurrentCell,
-                cellView.Cell);
+        var path = pathfinder.FindPath(selected.CurrentCell, cellView.Cell);
 
         if (path == null)
-        {
             return;
-        }
 
-        movementController.MoveUnit(
-            selectedUnit,
-            path);
+        movementController.MoveUnit(selected, path);
     }
 
-    private void OnUnitSelected(
-        HexUnit unit)
+    // ---------------- SELECTION ----------------
+
+    private void OnCellHovered(HexCell hoveredCell)
     {
         pathPreview.Clear();
 
-        rangeVisualizer.Clear();
-
-        reachableCells.Clear();
-
-        if (unit == null)
-        {
-            return;
-        }
-
-        reachableCells =
-            rangeCalculator
-                .GetReachableCells(
-                    unit);
-
-        rangeVisualizer.ShowRange(
-            reachableCells);
-    }
-
-    private void OnUnitDeselected(
-        HexUnit unit)
-    {
-        pathPreview.Clear();
-
-        rangeVisualizer.Clear();
-
-        reachableCells.Clear();
-    }
-
-    private void OnCellHovered(
-        HexCell hoveredCell)
-    {
-        pathPreview.Clear();
-
-        HexUnit selectedUnit =
-            unitSelection.SelectedUnit;
+        HexUnit selectedUnit = unitSelection.SelectedUnit;
 
         if (selectedUnit == null)
-        {
             return;
-        }
 
         if (selectedUnit.IsMoving)
-        {
             return;
-        }
 
         if (hoveredCell == null)
-        {
             return;
-        }
 
         List<HexCell> path =
             pathfinder.FindPath(
@@ -299,45 +154,90 @@ public class UnitInteractionController : MonoBehaviour
                 hoveredCell);
 
         if (path == null)
-        {
             return;
-        }
 
-        bool valid =
-            reachableCells.Contains(
-                hoveredCell);
+        bool valid = reachableCells.Contains(hoveredCell);
 
-        pathPreview.ShowPath(
-            path,
-            valid);
+        pathPreview.ShowPath(path, valid);
     }
 
-    private void OnMovementStarted(
-        HexUnit unit)
+    private void OnUnitSelected(HexUnit unit)
     {
+        if (unit == null)
+            return;
+
+        unit.Stats.MovementPointsChanged += OnMovementChanged;
+
+        reachableCells = rangeCalculator.GetReachableCells(unit);
+        rangeVisualizer.ShowRange(reachableCells);
+    }
+
+    private void OnUnitDeselected(HexUnit unit)
+    {
+        if (unit != null)
+            unit.Stats.MovementPointsChanged -= OnMovementChanged;
+
         pathPreview.Clear();
-
         rangeVisualizer.Clear();
-
         reachableCells.Clear();
     }
 
-    private void OnMovementFinished(
-        HexUnit unit)
+    private void OnMovementChanged()
+    {
+        HexUnit unit = unitSelection.SelectedUnit;
+
+        if (unit == null)
+            return;
+
+        reachableCells = rangeCalculator.GetReachableCells(unit);
+        rangeVisualizer.ShowRange(reachableCells);
+    }
+
+    // ---------------- MOVEMENT ----------------
+
+    private void OnMovementStarted(HexUnit unit)
+    {
+        pathPreview.Clear();
+        rangeVisualizer.Clear();
+        reachableCells.Clear();
+    }
+
+    private void OnMovementFinished(HexUnit unit)
     {
         if (unitSelection.SelectedUnit != unit)
-        {
             return;
+
+        reachableCells = rangeCalculator.GetReachableCells(unit);
+        rangeVisualizer.ShowRange(reachableCells);
+    }
+
+    // ---------------- STATE MACHINE ----------------
+
+    private void OnStateChanged(GameState state)
+    {
+        if (state == GameState.TeamTurn)
+        {
+            RefreshSelection();
         }
 
-        reachableCells =
-            rangeCalculator
-                .GetReachableCells(
-                    unit);
+        if (state == GameState.UnitSelected)
+        {
+            RefreshSelection();
+        }
 
-        rangeVisualizer.ShowRange(
-            reachableCells);
+        if (state == GameState.UnitMoving)
+        {
+            rangeVisualizer.Clear();
+        }
+    }
 
-        pathPreview.Clear();
+    public void RefreshSelection()
+    {
+        HexUnit unit = unitSelection.SelectedUnit;
+
+        if (unit == null)
+            return;
+
+        OnUnitSelected(unit);
     }
 }
