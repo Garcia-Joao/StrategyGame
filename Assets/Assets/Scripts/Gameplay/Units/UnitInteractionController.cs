@@ -106,7 +106,9 @@ public class UnitInteractionController : MonoBehaviour
             if (unit.Owner != unitManager.LocalPlayer)
                 return;
 
-            unitSelection.SelectUnit(unit);
+            if (unitSelection.SelectedUnit != unit)
+                return;
+
             return;
         }
 
@@ -233,11 +235,6 @@ public class UnitInteractionController : MonoBehaviour
 
     public void RefreshSelection()
     {
-        HexUnit unit = unitSelection.SelectedUnit;
-
-        if (unit == null)
-            return;
-
-        OnUnitSelected(unit);
+        OnMovementChanged();
     }
 }

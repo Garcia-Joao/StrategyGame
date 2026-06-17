@@ -68,6 +68,21 @@ public class GameBootstrap : MonoBehaviour
             unitManager,
             movementRangeVisualizer);
 
+        unitInteractionController.Initialize(
+        inputManager,
+        gridManager,
+        hexSelectionManager,
+        unitSelectionManager,
+        movementRangeVisualizer,
+        pathPreviewSystem,
+        unitMovementController,
+        unitManager,
+        stateMachine);
+
+        unitMovementController.Initialize(unitManager, unitInteractionController.PathRules, stateMachine);
+
+        turnManager.Initialize(stateMachine);
+
         if (spawnDebugUnit)
         {
             stateMachine.SetState(GameState.Spawning);

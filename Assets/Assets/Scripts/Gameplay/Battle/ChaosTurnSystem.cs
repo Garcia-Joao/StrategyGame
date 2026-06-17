@@ -90,57 +90,44 @@ public class ChaosTurnSystem : ITurnSystem
     private void StartTeamPhase(Team team)
     {
         Debug.Log($"LocalPlayer = {unitManager.LocalPlayer?.Name ?? "NULL"}");
-        CurrentPhase =
-            BattlePhase.Team;
 
-        CurrentTeam =
-            team;
+        CurrentPhase = BattlePhase.Team;
+        CurrentTeam = team;
 
         foreach (HexUnit unit in unitManager.GetUnits(team))
         {
             unit.ResetTurn();
-
-            unit.Stats.ResetMovement();
         }
 
         TeamPhaseStarted?.Invoke(team);
 
-        SelectNextAvailableUnit();
+        CurrentUnit = null;
 
-        unitInteractionController.RefreshSelection();
+        SelectNextAvailableUnit();
     }
 
     public void EndCurrentTurn()
     {
-        HexUnit unit = selectionManager.SelectedUnit;
-
-        if (unit == null)
+        if (CurrentUnit == null)
             return;
 
-        if (unit.Owner != unitManager.LocalPlayer)
+        if (CurrentUnit.Owner != unitManager.LocalPlayer)
             return;
 
-        if (unit.TurnEnded)
+        if (CurrentUnit.TurnEnded)
             return;
 
-        unit.EndTurn();
-        UnitTurnFinished?.Invoke(unit);
+        CurrentUnit.EndTurn();
 
-        foreach (HexUnit other in unitManager.GetUnits(CurrentTeam))
-        {
-            if (other.Owner != unitManager.LocalPlayer)
-                continue;
+        UnitTurnFinished?.Invoke(CurrentUnit);
 
-            if (!other.TurnEnded)
-            {
-                selectionManager.SelectUnit(other);
-                cameraController.FocusOn(other);
-                return;
-            }
-        }
+        selectionManager.ClearSelection();
 
-        CheckPhaseCompletion();
+        CurrentUnit = null;
+
+        SelectNextAvailableUnit();
     }
+
 
     private void SelectNextAvailableUnit()
     {
@@ -152,11 +139,22 @@ public class ChaosTurnSystem : ITurnSystem
             if (unit.TurnEnded)
                 continue;
 
+            CurrentUnit = unit;
+
             selectionManager.SelectUnit(unit);
+
             cameraController.FocusOn(unit);
+
+            UnitTurnStarted?.Invoke(unit);
+
             return;
         }
+
+        CurrentUnit = null;
+
+        CheckPhaseCompletion();
     }
+
 
     private void CheckPhaseCompletion()
     {
