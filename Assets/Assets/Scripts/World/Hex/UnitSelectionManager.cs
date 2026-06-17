@@ -3,6 +3,8 @@ using UnityEngine;
 
 public class UnitSelectionManager : MonoBehaviour
 {
+    public bool HasSelection => SelectedUnit != null;
+
     public HexUnit SelectedUnit
     {
         get;

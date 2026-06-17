@@ -51,7 +51,7 @@ public class MovementRangeCalculator
                         neighbor);
 
                 if (nextCost >
-                    unit.MovementPoints)
+                    unit.Stats.CurrentMovementPoints)
                 {
                     continue;
                 }
@@ -65,6 +65,9 @@ public class MovementRangeCalculator
                 }
             }
         }
+
+        visited.Remove(
+            unit.CurrentCell);
 
         return visited;
     }

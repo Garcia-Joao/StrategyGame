@@ -19,11 +19,8 @@ public class HexRaycaster
                 ray,
                 out RaycastHit hit))
         {
-            Debug.Log("Hitted Any Cell");
             return null;
         }
-
-        Debug.Log("Hitted A Cell");
 
         return hit.collider
             .GetComponentInParent<HexCellView>();
@@ -35,11 +32,9 @@ public class HexRaycaster
 
         if (Physics.Raycast(ray, out RaycastHit hit))
         {
-            Debug.Log("Hit object: " + hit.collider.name);
             return hit.collider.GetComponentInParent<HexUnitView>();
         }
 
-        Debug.Log("NO UNIT HIT");
         return null;
     }
 }

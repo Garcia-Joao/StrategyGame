@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class CameraController : MonoBehaviour
@@ -104,6 +105,63 @@ public class CameraController : MonoBehaviour
 
         transform.eulerAngles =
             rotation;
+    }
+
+    private Coroutine focusRoutine;
+
+    public void FocusOn(
+        Vector3 worldPosition)
+    {
+        Vector3 pos =
+            transform.position;
+
+        pos.x = worldPosition.x;
+        pos.z = worldPosition.z;
+
+        transform.position = pos;
+    }
+
+    public void FocusOn(
+        HexUnit unit)
+    {
+        if (unit == null)
+        {
+            return;
+        }
+
+        FocusOn(
+            unit.CurrentCell.WorldPosition);
+    }
+
+    private IEnumerator FocusRoutine(
+    Vector3 targetPosition)
+    {
+        Vector3 start =
+            transform.position;
+
+        Vector3 end =
+            start;
+
+        end.x =
+            targetPosition.x;
+
+        end.z =
+            targetPosition.z;
+
+        float t = 0f;
+
+        while (t < 1f)
+        {
+            t += Time.deltaTime * 3f;
+
+            transform.position =
+                Vector3.Lerp(
+                    start,
+                    end,
+                    t);
+
+            yield return null;
+        }
     }
 
     private void HandleZoom()

@@ -172,6 +172,15 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""processors"": """",
                     ""interactions"": """",
                     ""initialStateCheck"": false
+                },
+                {
+                    ""name"": ""End_Turn"",
+                    ""type"": ""Button"",
+                    ""id"": ""ccf9e067-43c6-49c5-af5c-5e9374b1c66e"",
+                    ""expectedControlType"": """",
+                    ""processors"": """",
+                    ""interactions"": """",
+                    ""initialStateCheck"": false
                 }
             ],
             ""bindings"": [
@@ -339,6 +348,17 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
                     ""action"": ""Cancel"",
                     ""isComposite"": false,
                     ""isPartOfComposite"": false
+                },
+                {
+                    ""name"": """",
+                    ""id"": ""585c17a7-b839-4ea7-8c2c-10fb22440f2d"",
+                    ""path"": ""<Keyboard>/space"",
+                    ""interactions"": """",
+                    ""processors"": """",
+                    ""groups"": """",
+                    ""action"": ""End_Turn"",
+                    ""isComposite"": false,
+                    ""isPartOfComposite"": false
                 }
             ]
         }
@@ -356,6 +376,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         m_Gameplay_Brush_1 = m_Gameplay.FindAction("Brush_1", throwIfNotFound: true);
         m_Gameplay_Brush_2 = m_Gameplay.FindAction("Brush_2", throwIfNotFound: true);
         m_Gameplay_Brush_3 = m_Gameplay.FindAction("Brush_3", throwIfNotFound: true);
+        m_Gameplay_End_Turn = m_Gameplay.FindAction("End_Turn", throwIfNotFound: true);
     }
 
     ~@GameInputActions()
@@ -445,6 +466,7 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
     private readonly InputAction m_Gameplay_Brush_1;
     private readonly InputAction m_Gameplay_Brush_2;
     private readonly InputAction m_Gameplay_Brush_3;
+    private readonly InputAction m_Gameplay_End_Turn;
     /// <summary>
     /// Provides access to input actions defined in input action map "Gameplay".
     /// </summary>
@@ -492,6 +514,10 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         /// Provides access to the underlying input action "Gameplay/Brush_3".
         /// </summary>
         public InputAction @Brush_3 => m_Wrapper.m_Gameplay_Brush_3;
+        /// <summary>
+        /// Provides access to the underlying input action "Gameplay/End_Turn".
+        /// </summary>
+        public InputAction @End_Turn => m_Wrapper.m_Gameplay_End_Turn;
         /// <summary>
         /// Provides access to the underlying input action map instance.
         /// </summary>
@@ -545,6 +571,9 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
             @Brush_3.started += instance.OnBrush_3;
             @Brush_3.performed += instance.OnBrush_3;
             @Brush_3.canceled += instance.OnBrush_3;
+            @End_Turn.started += instance.OnEnd_Turn;
+            @End_Turn.performed += instance.OnEnd_Turn;
+            @End_Turn.canceled += instance.OnEnd_Turn;
         }
 
         /// <summary>
@@ -583,6 +612,9 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
             @Brush_3.started -= instance.OnBrush_3;
             @Brush_3.performed -= instance.OnBrush_3;
             @Brush_3.canceled -= instance.OnBrush_3;
+            @End_Turn.started -= instance.OnEnd_Turn;
+            @End_Turn.performed -= instance.OnEnd_Turn;
+            @End_Turn.canceled -= instance.OnEnd_Turn;
         }
 
         /// <summary>
@@ -686,5 +718,12 @@ public partial class @GameInputActions: IInputActionCollection2, IDisposable
         /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
         /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
         void OnBrush_3(InputAction.CallbackContext context);
+        /// <summary>
+        /// Method invoked when associated input action "End_Turn" is either <see cref="UnityEngine.InputSystem.InputAction.started" />, <see cref="UnityEngine.InputSystem.InputAction.performed" /> or <see cref="UnityEngine.InputSystem.InputAction.canceled" />.
+        /// </summary>
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.started" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.performed" />
+        /// <seealso cref="UnityEngine.InputSystem.InputAction.canceled" />
+        void OnEnd_Turn(InputAction.CallbackContext context);
     }
 }

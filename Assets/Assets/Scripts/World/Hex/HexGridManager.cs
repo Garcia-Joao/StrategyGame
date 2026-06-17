@@ -62,16 +62,81 @@ public class HexGridManager : MonoBehaviour
     {
         SpawnVisuals();
 
-        List<HexCell> cells =
-            Grid.GetAllCells().ToList();
+        List<HexCell> cells = Grid.GetAllCells().ToList();
 
-        int randomIndex =
-            Random.Range(1, cells.Count);
+        if (cells.Count < 2)
+        {
+            Debug.LogError(
+                "Not enough cells to spawn units.");
 
-        HexCell spawnCell =
-            cells[randomIndex];
+            return;
+        }
 
-        unitManager.SpawnUnit(spawnCell);
+        Player localPlayer =
+            new Player(
+                "Player1",
+                Team.Team1,
+                true);
+
+        //Player enemyPlayer = new Player("Enemy",Team.Team2);
+
+        unitManager.RegisterPlayer(
+            localPlayer);
+
+        //unitManager.RegisterPlayer(enemyPlayer);
+
+        HexCell playerCell = GetRandomFreeCell(cells);
+
+        HexCell enemyCell = GetRandomFreeCell(cells);
+
+        UnitStats playerStats =
+            new UnitStats
+            {
+                Strength = 5,
+                Dexterity = 5,
+                Reflexes = 5,
+                Vitality = 5,
+                MovementPoints = 8,
+                MoveSpeed = 12f
+            };
+
+        playerStats.ResetMovement();
+
+        UnitStats enemyStats =
+            new UnitStats
+            {
+                Strength = 3,
+                Dexterity = 3,
+                Reflexes = 3,
+                Vitality = 3,
+                MovementPoints = 6,
+                MoveSpeed = 10f
+            };
+
+        enemyStats.ResetMovement();
+
+        unitManager.SpawnUnit(playerCell,localPlayer,playerStats);
+
+        //unitManager.SpawnUnit(enemyCell,enemyPlayer,enemyStats);
+    }
+
+    private HexCell GetRandomFreeCell(
+    List<HexCell> cells)
+    {
+        List<HexCell> freeCells =
+            cells
+                .Where(x => !x.IsOccupied)
+                .ToList();
+
+        if (freeCells.Count == 0)
+        {
+            return null;
+        }
+
+        return freeCells[
+            Random.Range(
+                0,
+                freeCells.Count)];
     }
 
     private void GenerateGrid()

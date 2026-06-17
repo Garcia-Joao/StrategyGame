@@ -1,33 +1,51 @@
 public static class UnitStatsFactory
 {
+    public static UnitStats Create(UnitDefinition definition)
+    {
+        return new UnitStats
+        {
+            MovementPoints =
+                definition.MovementPoints,
+
+            MoveSpeed =
+                definition.MoveSpeed,
+
+            Strength =
+                definition.Strength,
+
+            Dexterity =
+                definition.Dexterity,
+
+            Reflexes =
+                definition.Reflexes,
+
+            Vitality =
+                definition.Vitality
+        };
+    }
+
     public static UnitStats Create(
         BaseStatsData baseStats,
-        ClassDefinition classData)
+        ClassDefinition classDefinition)
     {
         return new UnitStats
         {
             MovementPoints =
                 baseStats.movementPoints +
-                classData.movementPointsBonus,
+                classDefinition.movementPointsBonus,
 
-            MoveSpeed =
-                baseStats.moveSpeed,
+            MoveSpeed = baseStats.moveSpeed,
 
             Strength =
-                baseStats.strength +
-                classData.strengthBonus,
+                baseStats.strength + classDefinition.strengthBonus,
 
             Dexterity =
-                baseStats.dexterity +
-                classData.dexterityBonus,
+                baseStats.dexterity + classDefinition.dexterityBonus,
 
             Reflexes =
-                baseStats.reflexes +
-                classData.reflexesBonus,
+                baseStats.reflexes + classDefinition.reflexesBonus,
 
-            Vitality =
-                baseStats.vitality +
-                classData.vitalityBonus
+            Vitality = baseStats.vitality + classDefinition.vitalityBonus
         };
     }
 }

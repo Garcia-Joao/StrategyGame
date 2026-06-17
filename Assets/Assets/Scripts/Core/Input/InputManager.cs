@@ -26,6 +26,8 @@ public class InputManager : MonoBehaviour
     public MappedAction<float> MouseSelectAction { get; private set; }
     public MappedAction<float> MouseCancelAction { get; private set; }
 
+    public MappedAction<float> EndTurnAction { get; private set; }
+
     public MappedAction<float> Brush1Action { get; private set; }
     public MappedAction<float> Brush2Action { get; private set; }
     public MappedAction<float> Brush3Action { get; private set; }
@@ -88,6 +90,11 @@ public class InputManager : MonoBehaviour
         MouseCancelAction =
             RegisterInput<float>(
                 inputActions.Gameplay.Cancel);
+
+
+        EndTurnAction = 
+            RegisterInput<float>(
+                inputActions.Gameplay.End_Turn);
 
         Brush1Action =
             RegisterInput<float>(

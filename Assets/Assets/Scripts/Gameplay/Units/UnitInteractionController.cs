@@ -9,12 +9,17 @@ public class UnitInteractionController : MonoBehaviour
 
     [SerializeField]
     private HexPathRules pathRules;
+    public HexPathRules PathRules
+    {
+        get => pathRules;
+    }
 
     [SerializeField]
     private float dragThreshold = 5f;
 
     private InputManager inputManager;
     private HexGridManager gridManager;
+    private UnitManager unitManager;
     private HexSelectionManager cellSelection;
     private UnitSelectionManager unitSelection;
     private MovementRangeVisualizer rangeVisualizer;
@@ -46,7 +51,8 @@ public class UnitInteractionController : MonoBehaviour
         UnitSelectionManager unitSelection,
         MovementRangeVisualizer rangeVisualizer,
         PathPreviewSystem pathPreview,
-        UnitMovementController movementController)
+        UnitMovementController movementController,
+        UnitManager unitManager)
     {
         this.inputManager = inputManager;
         this.gridManager = gridManager;
@@ -55,6 +61,7 @@ public class UnitInteractionController : MonoBehaviour
         this.rangeVisualizer = rangeVisualizer;
         this.pathPreview = pathPreview;
         this.movementController = movementController;
+        this.unitManager = unitManager;
 
         Debug.Assert(gridManager != null, "GridManager NULL");
         Debug.Assert(gridManager.Grid != null, "Grid NULL");
@@ -155,19 +162,12 @@ public class UnitInteractionController : MonoBehaviour
         isDraggingRightClick = false;
     }
 
-    private void OnRightMouseReleased(
-        float _)
+    private void OnRightMouseReleased(float _)
     {
-        if (isDraggingRightClick)
-        {
-            return;
-        }
 
-        unitSelection.ClearSelection();
     }
 
-    private void OnLeftClick(
-        float _)
+    private void OnLeftClick(float _)
     {
         Vector2 mousePosition =
             inputManager
@@ -180,8 +180,16 @@ public class UnitInteractionController : MonoBehaviour
 
         if (unitView != null)
         {
+            HexUnit unit =
+                unitView.Unit;
+
+            if (unit.Owner != unitManager.LocalPlayer)
+            {
+                return;
+            }
+
             unitSelection.SelectUnit(
-                unitView.Unit);
+                unit);
 
             return;
         }
@@ -331,7 +339,5 @@ public class UnitInteractionController : MonoBehaviour
             reachableCells);
 
         pathPreview.Clear();
-
-        unitSelection.ClearSelection();
     }
 }

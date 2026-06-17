@@ -8,15 +8,16 @@ public class UnitMovementController : MonoBehaviour
     public event Action<HexUnit> MovementStarted;
     public event Action<HexUnit> MovementFinished;
 
-    [SerializeField]
-    private float moveSpeed = 8f;
-
     private UnitManager unitManager;
 
+    private HexPathRules pathRules;
+
     public void Initialize(
-        UnitManager unitManager)
+        UnitManager unitManager,
+        HexPathRules pathRules)
     {
         this.unitManager = unitManager;
+        this.pathRules = pathRules;
     }
 
     public void MoveUnit(
@@ -29,7 +30,7 @@ public class UnitMovementController : MonoBehaviour
         }
 
         if (path == null ||
-            path.Count == 0)
+            path.Count < 2)
         {
             return;
         }
@@ -39,10 +40,38 @@ public class UnitMovementController : MonoBehaviour
             return;
         }
 
+        int pathCost =
+            CalculatePathCost(path);
+
+        if (pathCost >
+            unit.Stats.CurrentMovementPoints)
+        {
+            return;
+        }
+
+        unit.Stats.ConsumeMovement(
+            pathCost);
+
         StartCoroutine(
             MoveRoutine(
                 unit,
                 path));
+    }
+
+    private int CalculatePathCost(
+        IReadOnlyList<HexCell> path)
+    {
+        int totalCost = 0;
+
+        for (int i = 1; i < path.Count; i++)
+        {
+            totalCost +=
+                pathRules.GetMoveCost(
+                    path[i - 1],
+                    path[i]);
+        }
+
+        return totalCost;
     }
 
     private IEnumerator MoveRoutine(
@@ -53,11 +82,11 @@ public class UnitMovementController : MonoBehaviour
 
         MovementStarted?.Invoke(unit);
 
-        foreach (HexCell cell in path)
+        for (int i = 1; i < path.Count; i++)
         {
             yield return MoveToCell(
                 unit,
-                cell);
+                path[i]);
         }
 
         unit.SetMoving(false);
@@ -71,6 +100,9 @@ public class UnitMovementController : MonoBehaviour
     {
         Transform transform =
             unit.View.transform;
+
+        float moveSpeed =
+            unit.Stats.MoveSpeed;
 
         Vector3 targetPosition =
             targetCell.WorldPosition +

@@ -12,6 +12,11 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private MovementRangeVisualizer movementRangeVisualizer;
     [SerializeField] private PathPreviewSystem pathPreviewSystem;
     [SerializeField] private UnitMovementController unitMovementController;
+    [SerializeField] private TurnManager turnManager;
+    [SerializeField] private DebugManager debugManager;
+    [SerializeField] private TurnInputController turnInputController;
+
+    private WorldTurnManager worldTurnManager;
 
     [Header("Consumers")]
     [SerializeField] private CameraController cameraController;
@@ -19,8 +24,11 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private UnitInteractionController unitInteractionController;
     [SerializeField] private TerrainBrushManager terrainBrushManager;
 
+
     private void Start()
     {
+        worldTurnManager = new WorldTurnManager();
+
         gridManager.Initialize(unitManager);
 
         movementRangeVisualizer.Initialize(gridManager);
@@ -44,8 +52,13 @@ public class GameBootstrap : MonoBehaviour
             unitSelectionManager,
             movementRangeVisualizer,
             pathPreviewSystem,
-            unitMovementController);
+            unitMovementController,
+            unitManager);
 
-        unitMovementController.Initialize(unitManager);
+        unitMovementController.Initialize(unitManager, unitInteractionController.PathRules);
+
+        debugManager.Initialize(unitSelectionManager, unitManager);
+        turnManager.Initialize(unitManager, unitSelectionManager, worldTurnManager, cameraController, gridManager);
+        turnInputController.Initialize(inputManager, turnManager);
     }
 }

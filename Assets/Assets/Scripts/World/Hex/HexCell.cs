@@ -18,7 +18,7 @@ public class HexCell
     public HexCell(
         HexCoord coordinate,
         float height,
-        int movementCost = 1)
+        int movementCost = 0)
     {
         Coordinate = coordinate;
         Height = height;
