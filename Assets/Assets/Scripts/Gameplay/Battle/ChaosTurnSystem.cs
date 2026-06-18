@@ -59,7 +59,7 @@ public class ChaosTurnSystem : ITurnSystem
         this.unitInteractionController = unitInteractionController;
         this.cameraController = cameraController;
 
-        Debug.Log($"Local Player: {unitManager.LocalPlayer?.Name ?? "NULL"}");
+        //Debug.Log($"Local Player: {unitManager.LocalPlayer?.Name ?? "NULL"}");
     }
 
     public void StartBattle()
@@ -72,6 +72,11 @@ public class ChaosTurnSystem : ITurnSystem
     private void StartRound()
     {
         CurrentPhase = BattlePhase.World;
+
+        foreach (HexUnit unit in unitManager.Units)
+        {
+            unit.ResetTurn();
+        }
 
         RoundStarted?.Invoke(CurrentRound);
 
@@ -89,15 +94,10 @@ public class ChaosTurnSystem : ITurnSystem
 
     private void StartTeamPhase(Team team)
     {
-        Debug.Log($"LocalPlayer = {unitManager.LocalPlayer?.Name ?? "NULL"}");
+        //Debug.Log($"LocalPlayer = {unitManager.LocalPlayer?.Name ?? "NULL"}");
 
         CurrentPhase = BattlePhase.Team;
         CurrentTeam = team;
-
-        foreach (HexUnit unit in unitManager.GetUnits(team))
-        {
-            unit.ResetTurn();
-        }
 
         TeamPhaseStarted?.Invoke(team);
 
@@ -143,6 +143,8 @@ public class ChaosTurnSystem : ITurnSystem
 
             selectionManager.SelectUnit(unit);
 
+            unitInteractionController.RefreshSelection();
+
             cameraController.FocusOn(unit);
 
             UnitTurnStarted?.Invoke(unit);
@@ -185,7 +187,7 @@ public class ChaosTurnSystem : ITurnSystem
 
     private void EndRound()
     {
-        Debug.Log($"Ending Round {CurrentRound}");
+        //Debug.Log($"Ending Round {CurrentRound}");
         ExecuteWorldPhase();
 
         RoundFinished?.Invoke(
@@ -212,7 +214,7 @@ public class ChaosTurnSystem : ITurnSystem
     {
         if (!unitManager.HasAnyUnit(team))
         {
-            Debug.Log($"Skipping {team} - no units alive");
+            //Debug.Log($"Skipping {team} - no units alive");
             return false;
         }
 

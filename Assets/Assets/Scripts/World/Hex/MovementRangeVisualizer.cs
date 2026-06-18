@@ -17,25 +17,30 @@ public class MovementRangeVisualizer : MonoBehaviour
             "GridManager NULL");
     }
 
-    public void ShowRange(
-        IEnumerable<HexCell> cells)
+    public void ShowRange(IEnumerable<HexCell> cells)
     {
+        //Debug.Log("ShowRange called");
+
         Clear();
+
+        int count = 0;
 
         foreach (HexCell cell in cells)
         {
+            count++;
+
             HexCellView view =
                 gridManager.GetView(cell);
 
             if (view == null)
-            {
                 continue;
-            }
 
             view.SetMoveRange(true);
 
             activeViews.Add(view);
         }
+
+        //Debug.Log($"Rendered {count} cells");
     }
 
     public void Clear()

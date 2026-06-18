@@ -13,7 +13,7 @@ public class GameStateMachine : MonoBehaviour
             return;
 
         CurrentState = newState;
-        Debug.Log($"STATE → {newState}");
+        //Debug.Log($"STATE → {newState}");
 
         StateChanged?.Invoke(newState);
     }

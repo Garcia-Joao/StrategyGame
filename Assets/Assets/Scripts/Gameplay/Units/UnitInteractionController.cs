@@ -106,9 +106,7 @@ public class UnitInteractionController : MonoBehaviour
             if (unit.Owner != unitManager.LocalPlayer)
                 return;
 
-            if (unitSelection.SelectedUnit != unit)
-                return;
-
+            unitSelection.SelectUnit(unit);
             return;
         }
 
@@ -165,14 +163,17 @@ public class UnitInteractionController : MonoBehaviour
 
     private void OnUnitSelected(HexUnit unit)
     {
-        if (unit == null)
-            return;
+        //Debug.Log($"UNIT SELECTED: {unit.Name}");
 
         unit.Stats.MovementPointsChanged += OnMovementChanged;
 
         reachableCells = rangeCalculator.GetReachableCells(unit);
+
+        //Debug.Log($"Reachable: {reachableCells.Count}");
+
         rangeVisualizer.ShowRange(reachableCells);
     }
+
 
     private void OnUnitDeselected(HexUnit unit)
     {
@@ -188,10 +189,15 @@ public class UnitInteractionController : MonoBehaviour
     {
         HexUnit unit = unitSelection.SelectedUnit;
 
+        //Debug.Log($"OnMovementChanged: {unit?.Name}");
+
         if (unit == null)
             return;
 
         reachableCells = rangeCalculator.GetReachableCells(unit);
+
+        //Debug.Log($"Reachable Cells: {reachableCells.Count}");
+
         rangeVisualizer.ShowRange(reachableCells);
     }
 
@@ -235,6 +241,8 @@ public class UnitInteractionController : MonoBehaviour
 
     public void RefreshSelection()
     {
+        //Debug.Log("RefreshSelection");
+
         OnMovementChanged();
     }
 }

@@ -4,13 +4,16 @@ public class TurnInputController : MonoBehaviour
 {
     private InputManager inputManager;
     private GameStateMachine stateMachine;
+    private TurnManager turnManager;
 
     public void Initialize(
         InputManager inputManager,
-        GameStateMachine stateMachine)
+        GameStateMachine stateMachine,
+        TurnManager turnManager)
     {
         this.inputManager = inputManager;
         this.stateMachine = stateMachine;
+        this.turnManager = turnManager;
 
         inputManager.EndTurnAction.ActionStarted += OnEndTurnPressed;
     }
@@ -25,8 +28,6 @@ public class TurnInputController : MonoBehaviour
 
     private void OnEndTurnPressed(float _)
     {
-        Debug.Log("End Turn Pressed");
-
-        stateMachine.SetState(GameState.WorldPhase);
+        turnManager.EndCurrentTurn();
     }
 }

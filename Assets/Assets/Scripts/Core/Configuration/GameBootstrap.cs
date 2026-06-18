@@ -39,10 +39,10 @@ public class GameBootstrap : MonoBehaviour
         gridManager.Initialize(
             unitManager);
 
-        movementRangeVisualizer.Initialize(
+        pathPreviewSystem.Initialize(
             gridManager);
 
-        pathPreviewSystem.Initialize(
+        movementRangeVisualizer.Initialize(
             gridManager);
 
         cameraController.Initialize(
@@ -61,8 +61,7 @@ public class GameBootstrap : MonoBehaviour
             unitSelectionManager,
             unitManager);
 
-        turnInputController.Initialize(
-            inputManager, stateMachine);
+        turnInputController.Initialize(inputManager, stateMachine, turnManager);
 
         unitSelectionManager.Initialize(
             unitManager,
@@ -81,7 +80,13 @@ public class GameBootstrap : MonoBehaviour
 
         unitMovementController.Initialize(unitManager, unitInteractionController.PathRules, stateMachine);
 
-        turnManager.Initialize(stateMachine);
+        turnManager.Initialize(
+            stateMachine,
+            unitManager,
+            unitSelectionManager,
+            cameraController,
+            unitInteractionController,
+            worldTurnManager);
 
         if (spawnDebugUnit)
         {
@@ -100,8 +105,7 @@ public class GameBootstrap : MonoBehaviour
                 Team.Team1,
                 true);
 
-        unitManager.RegisterPlayer(
-            localPlayer);
+        unitManager.RegisterPlayer(localPlayer);
 
         unitManager.SetLocalPlayer(localPlayer);
 
@@ -111,16 +115,15 @@ public class GameBootstrap : MonoBehaviour
                 .OrderBy(_ => Random.value)
                 .First();
 
-        UnitStats stats =
-            new UnitStats
-            {
-                Strength = 5,
-                Dexterity = 5,
-                Reflexes = 5,
-                Vitality = 5,
-                MovementPoints = 8,
-                MoveSpeed = 12f
-            };
+        UnitStats stats = new UnitStats
+        {
+            Strength = 5,
+            Dexterity = 5,
+            Reflexes = 5,
+            Vitality = 5,
+            MovementPoints = 8,
+            MoveSpeed = 12f
+        };
 
         stats.ResetMovement();
 
@@ -128,5 +131,29 @@ public class GameBootstrap : MonoBehaviour
             spawnCell,
             localPlayer,
             stats);
+
+
+        HexCell spawnCell2 =
+    gridManager.Grid
+        .GetAllCells()
+        .OrderBy(_ => Random.value)
+        .First();
+
+        UnitStats stats2 = new UnitStats
+        {
+            Strength = 5,
+            Dexterity = 5,
+            Reflexes = 5,
+            Vitality = 5,
+            MovementPoints = 4,
+            MoveSpeed = 12f
+        };
+
+        stats.ResetMovement();
+
+        unitManager.SpawnUnit(
+            spawnCell2,
+            localPlayer,
+            stats2);
     }
 }
