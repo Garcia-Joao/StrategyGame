@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using UnityEngine;
 
 public class ChaosTurnSystem : ITurnSystem
@@ -19,6 +20,8 @@ public class ChaosTurnSystem : ITurnSystem
 
     public event Action<HexUnit> UnitTurnFinished;
 
+    public HexUnit CurrentUnit => selectionManager.SelectedUnit;
+
     public Team CurrentTeam
     {
         get;
@@ -32,12 +35,6 @@ public class ChaosTurnSystem : ITurnSystem
     }
 
     public BattlePhase CurrentPhase
-    {
-        get;
-        private set;
-    }
-
-    public HexUnit CurrentUnit
     {
         get;
         private set;
@@ -94,28 +91,42 @@ public class ChaosTurnSystem : ITurnSystem
 
     private void StartTeamPhase(Team team)
     {
-        //Debug.Log($"LocalPlayer = {unitManager.LocalPlayer?.Name ?? "NULL"}");
-
         CurrentPhase = BattlePhase.Team;
         CurrentTeam = team;
 
         TeamPhaseStarted?.Invoke(team);
 
-        CurrentUnit = null;
+        selectionManager.ClearSelection();
 
         SelectNextAvailableUnit();
     }
 
     public void EndCurrentTurn()
     {
-        if (CurrentUnit == null)
-            return;
+        HexUnit CurrentUnit = selectionManager.SelectedUnit;
 
-        if (CurrentUnit.Owner != unitManager.LocalPlayer)
+        if (CurrentUnit == null)
+        {
             return;
+        }
 
         if (CurrentUnit.TurnEnded)
+        {
             return;
+        }
+
+        if (CurrentUnit.Team != CurrentTeam)
+        {
+            return;
+        }
+
+        bool canControl =
+            CurrentUnit.Owner.IsLocalPlayer;
+
+        if (!canControl)
+        {
+            return;
+        }
 
         CurrentUnit.EndTurn();
 
@@ -123,36 +134,37 @@ public class ChaosTurnSystem : ITurnSystem
 
         selectionManager.ClearSelection();
 
-        CurrentUnit = null;
-
         SelectNextAvailableUnit();
     }
 
-
     private void SelectNextAvailableUnit()
     {
+        bool controlCurrentTeam =
+            unitManager.Players.Any(
+                p =>
+                    p.Team == CurrentTeam &&
+                    p.IsLocalPlayer);
+
         foreach (HexUnit unit in unitManager.GetUnits(CurrentTeam))
         {
-            if (unit.Owner != unitManager.LocalPlayer)
-                continue;
-
             if (unit.TurnEnded)
+            {
                 continue;
+            }
 
-            CurrentUnit = unit;
+            if (controlCurrentTeam)
+            {
+                selectionManager.SelectUnit(unit);
 
-            selectionManager.SelectUnit(unit);
-
-            unitInteractionController.RefreshSelection();
-
-            cameraController.FocusOn(unit);
+                cameraController.FocusOn(unit);
+            }
 
             UnitTurnStarted?.Invoke(unit);
 
             return;
         }
 
-        CurrentUnit = null;
+        selectionManager.ClearSelection();
 
         CheckPhaseCompletion();
     }

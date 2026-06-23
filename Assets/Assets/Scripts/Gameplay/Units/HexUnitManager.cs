@@ -62,7 +62,9 @@ public class UnitManager : MonoBehaviour
     public HexUnit SpawnUnit(
         HexCell cell,
         Player owner,
-        UnitStats stats)
+        UnitStats stats,
+        MovementProperties movementProperties,
+        ActionStats actionStats)
     {
         Vector3 spawnPos =
             cell.WorldPosition +
@@ -81,9 +83,50 @@ public class UnitManager : MonoBehaviour
             new HexUnit(
                 owner.Name,
                 owner,
-                stats);
+                stats,
+                movementProperties,
+                actionStats
+                );
 
-        owner.AddUnit(unit);
+        unit.SetCell(cell);
+        unit.SetView(view);
+
+        cell.SetOccupyingUnit(
+            unit);
+
+        view.Initialize(unit);
+
+        units.Add(unit);
+
+        return unit;
+    }
+
+    public HexUnit SpawnUnit(
+        HexCell cell,
+        Player owner,
+        string name,
+        UnitStats stats,
+        MovementProperties movementProperties,
+        ActionStats actionStats)
+    {
+        Vector3 spawnPos =
+            cell.WorldPosition +
+            Vector3.up * unitHeightOffset;
+
+        GameObject instance = Instantiate(unitPrefab,spawnPos,Quaternion.identity);
+
+        instance.name = name;
+
+        HexUnitView view =
+            instance.GetComponent<HexUnitView>();
+
+        HexUnit unit =
+            new HexUnit(
+                name,
+                owner,
+                stats,
+                movementProperties,
+                actionStats);
 
         unit.SetCell(cell);
         unit.SetView(view);

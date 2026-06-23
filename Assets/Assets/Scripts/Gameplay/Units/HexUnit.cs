@@ -1,5 +1,14 @@
-public class HexUnit
+using System;
+
+public class HexUnit : IHexOccupant
 {
+
+    public virtual bool BlocksMovement => true;
+
+    public virtual bool BlocksVision => true;
+
+    public virtual bool IsDestructible => true;
+
     public string Name { get; }
 
     public Team Team => Owner.Team;
@@ -7,6 +16,9 @@ public class HexUnit
     public Player Owner { get; }
 
     public UnitStats Stats { get; private set; }
+    public ActionStats ActionStats{ get; private set; }
+
+    public MovementProperties MovementProperties { get; private set; }
 
     public HexCell CurrentCell { get; private set; }
 
@@ -16,14 +28,21 @@ public class HexUnit
 
     public bool IsMoving { get; private set; }
 
+    public event Action TurnStateChanged;
+
+
     public HexUnit(
         string name,
         Player owner,
-        UnitStats stats)
+        UnitStats stats,
+        MovementProperties movementProperties,
+        ActionStats actionStats)
     {
         Name = name;
         Owner = owner;
         Stats = stats;
+        MovementProperties = movementProperties;
+        ActionStats = actionStats;
 
         owner?.AddUnit(this);
     }
@@ -33,15 +52,25 @@ public class HexUnit
         Stats = stats;
     }
 
+    public void SetMovementProperties(MovementProperties movementProperties)
+    {
+        MovementProperties =
+            movementProperties;
+    }
+
     public void SetCell(HexCell cell)
     {
         if (CurrentCell != null)
+        {
             CurrentCell.SetOccupyingUnit(null);
+        }
 
         CurrentCell = cell;
 
         if (CurrentCell != null)
+        {
             CurrentCell.SetOccupyingUnit(this);
+        }
     }
 
     public void SetView(HexUnitView view)
@@ -56,7 +85,14 @@ public class HexUnit
 
     public void EndTurn()
     {
+        if (TurnEnded)
+        {
+            return;
+        }
+
         TurnEnded = true;
+
+        TurnStateChanged?.Invoke();
     }
 
     public void ResetTurn()
@@ -64,5 +100,8 @@ public class HexUnit
         TurnEnded = false;
 
         Stats.ResetMovement();
+        ActionStats.Reset();
+
+        TurnStateChanged?.Invoke();
     }
 }

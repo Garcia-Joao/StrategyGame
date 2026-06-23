@@ -4,8 +4,16 @@ using UnityEngine;
 public class TurnManager : MonoBehaviour
 {
     private GameStateMachine stateMachine;
+    private ITurnSystem turnSystem;
+    private bool battleStarted;
 
-    private ChaosTurnSystem chaosSystem;
+    public Team CurrentTeam => turnSystem.CurrentTeam;
+
+    public HexUnit CurrentUnit => turnSystem.CurrentUnit;
+
+    public TurnMode TurnMode => turnMode;
+
+    [SerializeField] private TurnMode turnMode;
 
     public void Initialize(
         GameStateMachine stateMachine,
@@ -17,14 +25,34 @@ public class TurnManager : MonoBehaviour
     {
         this.stateMachine = stateMachine;
 
-        chaosSystem = new ChaosTurnSystem(
-            unitManager,
-            selectionManager,
-            worldTurnManager,
-            cameraController,
-            interactionController);
+        switch (turnMode)
+        {
+            case TurnMode.Chaos:
 
-        stateMachine.StateChanged += OnStateChanged;
+                turnSystem =
+                    new ChaosTurnSystem(
+                        unitManager,
+                        selectionManager,
+                        worldTurnManager,
+                        cameraController,
+                        interactionController);
+
+                break;
+
+            case TurnMode.Dex:
+
+                turnSystem =
+                    new DexTurnSystem(
+                        unitManager,
+                        selectionManager,
+                        cameraController,
+                        worldTurnManager);
+
+                break;
+        }
+
+        stateMachine.StateChanged +=
+            OnStateChanged;
     }
 
     private void OnStateChanged(GameState state)
@@ -41,16 +69,13 @@ public class TurnManager : MonoBehaviour
         }
     }
 
-    private bool battleStarted;
-
     private void StartTeamTurn()
     {
-        //Debug.Log("Team Turn Started");
         if (!battleStarted)
         {
             battleStarted = true;
 
-            chaosSystem.StartBattle();
+            turnSystem.StartBattle();
 
             return;
         }
@@ -58,13 +83,11 @@ public class TurnManager : MonoBehaviour
 
     private void ExecuteWorldPhase()
     {
-        //Debug.Log("World Phase Executed");
-
         stateMachine.SetState(GameState.TeamTurn);
     }
 
     internal void EndCurrentTurn()
     {
-        chaosSystem.EndCurrentTurn();
+        turnSystem.EndCurrentTurn();
     }
 }

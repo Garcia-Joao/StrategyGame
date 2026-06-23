@@ -158,3 +158,4 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: de61d2f3b32fe3c4390e98290dab290a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::HexUnitView
+  cachedRenderer: {fileID: 3411695233126302896}

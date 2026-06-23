@@ -17,6 +17,10 @@ public class MovementRangeCalculator
     public HashSet<HexCell> GetReachableCells(
         HexUnit unit)
     {
+        MovementContext context =
+            MovementContextFactory
+                .FromUnit(unit);
+
         HashSet<HexCell> visited =
             new();
 
@@ -35,11 +39,14 @@ public class MovementRangeCalculator
             (HexCell current, int cost) =
                 frontier.Dequeue();
 
-            foreach (HexCell neighbor in grid.GetNeighbors(current.Coordinate))
+            foreach (HexCell neighbor
+                     in grid.GetNeighbors(
+                         current.Coordinate))
             {
                 if (!rules.CanMove(
                         current,
-                        neighbor))
+                        neighbor,
+                        context))
                 {
                     continue;
                 }
@@ -56,8 +63,7 @@ public class MovementRangeCalculator
                     continue;
                 }
 
-                if (visited.Add(
-                        neighbor))
+                if (visited.Add(neighbor))
                 {
                     frontier.Enqueue(
                         (neighbor,

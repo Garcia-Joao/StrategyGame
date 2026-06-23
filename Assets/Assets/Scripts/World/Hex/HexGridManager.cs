@@ -37,8 +37,6 @@ public class HexGridManager : MonoBehaviour
     {
         grid = new HexGrid();
 
-        Random.InitState(seed);
-
         noiseOffsetX =
             Random.Range(-10000f, 10000f);
 

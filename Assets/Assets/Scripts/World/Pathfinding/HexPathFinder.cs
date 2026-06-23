@@ -16,7 +16,8 @@ public class HexPathfinder
 
     public List<HexCell> FindPath(
         HexCell start,
-        HexCell goal)
+        HexCell goal,
+        MovementContext context)
     {
         Dictionary<HexCell, HexPathNode> nodes = new();
 
@@ -56,7 +57,8 @@ public class HexPathfinder
             {
                 if (!rules.CanMove(
                         current.Cell,
-                        neighborCell))
+                        neighborCell,
+                        context))
                 {
                     continue;
                 }

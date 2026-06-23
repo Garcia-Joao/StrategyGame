@@ -1,7 +1,7 @@
 public enum TurnMode
 {
     Chaos,
-    Dexterity
+    Dex
 }
 
 public enum BattlePhase

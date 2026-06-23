@@ -25,28 +25,41 @@ public class HexPathRules : ScriptableObject
 
     public bool CanMove(
         HexCell from,
-        HexCell to)
+        HexCell to,
+        MovementContext context)
     {
-        float heightDifference =
-            to.Height - from.Height;
-
-        if (heightDifference > maxClimbHeight)
+        if (!context.IgnoreOccupants)
         {
-            return false;
-        }
-
-        if (!allowUnlimitedDescent)
-        {
-            if (Mathf.Abs(heightDifference)
-                > maxClimbHeight)
+            if (to.Occupant != null)
             {
                 return false;
+            }
+        }
+
+        if (!context.IgnoreHeight)
+        {
+            float heightDifference =
+                to.Height - from.Height;
+
+            if (heightDifference > maxClimbHeight)
+            {
+                return false;
+            }
+
+            if (!allowUnlimitedDescent)
+            {
+                if (Mathf.Abs(heightDifference)
+                    > maxClimbHeight)
+                {
+                    return false;
+                }
             }
         }
 
         return true;
     }
 
+    
     public int GetMoveCost(
         HexCell from,
         HexCell to)

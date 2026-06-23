@@ -11,7 +11,6 @@ public class UnitInteractionController : MonoBehaviour
     public HexPathRules PathRules => pathRules;
 
     private InputManager inputManager;
-    private HexGridManager gridManager;
     private UnitManager unitManager;
     private HexSelectionManager cellSelection;
     private UnitSelectionManager unitSelection;
@@ -19,10 +18,10 @@ public class UnitInteractionController : MonoBehaviour
     private PathPreviewSystem pathPreview;
     private UnitMovementController movementController;
     private GameStateMachine stateMachine;
-
     private MovementRangeCalculator rangeCalculator;
     private HexPathfinder pathfinder;
     private HexRaycaster raycaster;
+    private TurnManager turnManager;
 
     private HashSet<HexCell> reachableCells = new();
 
@@ -41,10 +40,11 @@ public class UnitInteractionController : MonoBehaviour
         PathPreviewSystem pathPreview,
         UnitMovementController movementController,
         UnitManager unitManager,
-        GameStateMachine stateMachine)
+        GameStateMachine stateMachine,
+        TurnManager turnManager)
     {
         this.inputManager = inputManager;
-        this.gridManager = gridManager;
+        this.turnManager = turnManager;
         this.cellSelection = cellSelection;
         this.unitSelection = unitSelection;
         this.rangeVisualizer = rangeVisualizer;
@@ -103,10 +103,30 @@ public class UnitInteractionController : MonoBehaviour
         {
             HexUnit unit = unitView.Unit;
 
-            if (unit.Owner != unitManager.LocalPlayer)
+            if (unit.TurnEnded)
                 return;
 
-            unitSelection.SelectUnit(unit);
+            switch (turnManager.TurnMode)
+            {
+                case TurnMode.Chaos:
+
+                    if (unit.Team != turnManager.CurrentTeam)
+                        return;
+
+                    unitSelection.SelectUnit(unit);
+
+                    break;
+
+                case TurnMode.Dex:
+
+                    if (unit != turnManager.CurrentUnit)
+                        return;
+
+                    unitSelection.SelectUnit(unit);
+
+                    break;
+            }
+
             return;
         }
 
@@ -123,7 +143,15 @@ public class UnitInteractionController : MonoBehaviour
         if (!reachableCells.Contains(cellView.Cell))
             return;
 
-        var path = pathfinder.FindPath(selected.CurrentCell, cellView.Cell);
+        MovementContext context =
+    MovementContextFactory
+        .FromUnit(selected);
+
+        var path =
+            pathfinder.FindPath(
+                selected.CurrentCell,
+                cellView.Cell,
+                context);
 
         if (path == null)
             return;
@@ -148,10 +176,15 @@ public class UnitInteractionController : MonoBehaviour
         if (hoveredCell == null)
             return;
 
+        MovementContext context =
+            MovementContextFactory
+                .FromUnit(selectedUnit);
+
         List<HexCell> path =
             pathfinder.FindPath(
                 selectedUnit.CurrentCell,
-                hoveredCell);
+                hoveredCell,
+                context);
 
         if (path == null)
             return;
@@ -163,13 +196,11 @@ public class UnitInteractionController : MonoBehaviour
 
     private void OnUnitSelected(HexUnit unit)
     {
-        //Debug.Log($"UNIT SELECTED: {unit.Name}");
-
+        unit.Stats.MovementPointsChanged -= OnMovementChanged;
         unit.Stats.MovementPointsChanged += OnMovementChanged;
 
-        reachableCells = rangeCalculator.GetReachableCells(unit);
-
-        //Debug.Log($"Reachable: {reachableCells.Count}");
+        reachableCells =
+            rangeCalculator.GetReachableCells(unit);
 
         rangeVisualizer.ShowRange(reachableCells);
     }

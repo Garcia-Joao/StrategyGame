@@ -13,7 +13,13 @@ public class HexCell
 
     public HexUnit OccupyingUnit { get; private set; }
 
-    public bool IsOccupied => OccupyingUnit != null;
+    public bool IsOccupied => Occupant != null;
+
+    public IHexOccupant Occupant
+    {
+        get;
+        private set;
+    }
 
     public HexCell(
         HexCoord coordinate,
@@ -40,9 +46,22 @@ public class HexCell
         return $"Cell {Coordinate} | Height: {Height} | Cost: {MovementCost}";
     }
 
-    public void SetOccupyingUnit(
-    HexUnit unit)
+    public void SetOccupyingUnit(HexUnit unit)
     {
         OccupyingUnit = unit;
+
+        SetOccupant(unit);
+    }
+
+    public void SetOccupant(
+    IHexOccupant occupant)
+    {
+        Occupant = occupant;
+    }
+
+    public void ClearOccupant()
+    {
+        OccupyingUnit = null;
+        Occupant = null;
     }
 }

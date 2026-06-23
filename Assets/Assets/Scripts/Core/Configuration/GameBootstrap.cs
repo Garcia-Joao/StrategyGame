@@ -24,9 +24,15 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private UnitInteractionController unitInteractionController;
     [SerializeField] private TerrainBrushManager terrainBrushManager;
 
+    [Header("UI")]
+    [SerializeField] private ActionBarController actionBarController;
+
     [Header("Debug")]
-    [SerializeField]
-    private bool spawnDebugUnit = true;
+    [SerializeField] private bool spawnDebugUnit = true;
+    [SerializeField] private bool controlTeam2 = true;
+
+    [SerializeField] private int team1UnitCount = 2;
+    [SerializeField] private int team2UnitCount = 2;
 
     private WorldTurnManager worldTurnManager;
 
@@ -76,7 +82,8 @@ public class GameBootstrap : MonoBehaviour
         pathPreviewSystem,
         unitMovementController,
         unitManager,
-        stateMachine);
+        stateMachine,
+        turnManager);
 
         unitMovementController.Initialize(unitManager, unitInteractionController.PathRules, stateMachine);
 
@@ -88,6 +95,8 @@ public class GameBootstrap : MonoBehaviour
             unitInteractionController,
             worldTurnManager);
 
+        actionBarController.Initialize(inputManager);
+
         if (spawnDebugUnit)
         {
             stateMachine.SetState(GameState.Spawning);
@@ -95,23 +104,47 @@ public class GameBootstrap : MonoBehaviour
         }
 
         stateMachine.SetState(GameState.WorldPhase);
+
+
     }
 
     private void SpawnDebugUnits()
     {
-        Player localPlayer =
+        Player team1 =
             new Player(
                 "Player1",
                 Team.Team1,
                 true);
 
-        unitManager.RegisterPlayer(localPlayer);
+        Player team2 =
+            new Player(
+                "Player2",
+                Team.Team2,
+                controlTeam2);
 
-        unitManager.SetLocalPlayer(localPlayer);
+        unitManager.RegisterPlayer(team1);
+        unitManager.RegisterPlayer(team2);
 
+        unitManager.SetLocalPlayer(team1);
+
+        for (int i = 0; i < team1UnitCount; i++)
+        {
+            SpawnDebugUnit(team1, 8);
+        }
+
+        for (int i = 0; i < team2UnitCount; i++)
+        {
+            SpawnDebugUnit(team2, 8);
+        }
+    }
+
+
+    private void SpawnDebugUnit(Player owner, int movement)
+    {
         HexCell spawnCell =
             gridManager.Grid
                 .GetAllCells()
+                .Where(x => x.OccupyingUnit == null)
                 .OrderBy(_ => Random.value)
                 .First();
 
@@ -121,39 +154,39 @@ public class GameBootstrap : MonoBehaviour
             Dexterity = 5,
             Reflexes = 5,
             Vitality = 5,
-            MovementPoints = 8,
+            MovementPoints = movement,
             MoveSpeed = 12f
         };
 
         stats.ResetMovement();
+
+        MovementProperties movementProperties = new MovementProperties
+        {
+            IgnoreOccupants = false,
+            CanShareTile = false,
+            IgnoreHeight = false
+        };
+
+        string unitName =
+            RandomUnitNameGenerator
+                .Generate(owner.Team);
+
+        ActionStats actions =
+        new ActionStats
+        {
+            ActionPoints = 2,
+            QuickActionPoints = 1
+        };
+
+        actions.Reset();
 
         unitManager.SpawnUnit(
             spawnCell,
-            localPlayer,
-            stats);
-
-
-        HexCell spawnCell2 =
-    gridManager.Grid
-        .GetAllCells()
-        .OrderBy(_ => Random.value)
-        .First();
-
-        UnitStats stats2 = new UnitStats
-        {
-            Strength = 5,
-            Dexterity = 5,
-            Reflexes = 5,
-            Vitality = 5,
-            MovementPoints = 4,
-            MoveSpeed = 12f
-        };
-
-        stats.ResetMovement();
-
-        unitManager.SpawnUnit(
-            spawnCell2,
-            localPlayer,
-            stats2);
+            owner,
+            unitName,
+            stats,
+            movementProperties,
+            actions
+            );
     }
 }
