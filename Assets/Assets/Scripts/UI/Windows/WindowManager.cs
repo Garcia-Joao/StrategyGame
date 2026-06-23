@@ -3,6 +3,14 @@ using UnityEngine;
 
 public class WindowManager : MonoBehaviour
 {
+    [SerializeField] EditSkillsWindow editSkillsWindow;
+
+
+    public void OpenEditSkills()
+    {
+        editSkillsWindow.Open();
+    }
+
     private readonly List<UIWindow>
         openedWindows = new();
 
@@ -21,7 +29,6 @@ public class WindowManager : MonoBehaviour
         UIWindow window)
     {
         openedWindows.Remove(window);
-
         window.Close();
     }
 
