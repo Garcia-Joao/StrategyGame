@@ -81,3 +81,14 @@ public readonly struct HexCoord : IEquatable<HexCoord>
         ) / 2;
     }
 }
+
+public static class HexCellExtensions
+{
+    public static int DistanceTo(
+        this HexCell source,
+        HexCell target)
+    {
+        return source.Coordinate.DistanceTo(
+            target.Coordinate);
+    }
+}

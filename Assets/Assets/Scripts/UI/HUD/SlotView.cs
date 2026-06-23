@@ -10,6 +10,11 @@ public class SlotView : MonoBehaviour
 
     [SerializeField] private int slotNumber;
 
+    private UnitActionDefinition assignedAction;
+
+    public UnitActionDefinition AssignedAction =>
+        assignedAction;
+
     private Image slotImage;
 
     public SlotState currentState;
@@ -49,5 +54,19 @@ public class SlotView : MonoBehaviour
                 slotImage.color = unavailableColor;
                 break;
         }
+    }
+
+    public void SetAction(
+    UnitActionDefinition action)
+    {
+        assignedAction = action;
+
+        if (action == null)
+        {
+            SetState(SlotState.Empty);
+            return;
+        }
+
+        SetState(SlotState.Available);
     }
 }

@@ -17,6 +17,10 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private DebugManager debugManager;
     [SerializeField] private TurnInputController turnInputController;
     [SerializeField] private GameStateMachine stateMachine;
+    [SerializeField] private ActionSelectionManager actionSelectionManager;
+    [SerializeField] private ActionRangeVisualizer actionRangeVisualizer;
+    [SerializeField] private ActionPreviewSystem actionPreviewSystem;
+    [SerializeField] private StatsController statsController;
 
     [Header("Consumers")]
     [SerializeField] private CameraController cameraController;
@@ -26,10 +30,18 @@ public class GameBootstrap : MonoBehaviour
 
     [Header("UI")]
     [SerializeField] private ActionBarController actionBarController;
+    [SerializeField] private UnitStatsHUDController statsHUDController;
 
     [Header("Debug")]
     [SerializeField] private bool spawnDebugUnit = true;
     [SerializeField] private bool controlTeam2 = true;
+
+    [Header("Debug Units")]
+    [SerializeField]
+    private UnitDefinition team1UnitDefinition;
+
+    [SerializeField]
+    private UnitDefinition team2UnitDefinition;
 
     [SerializeField] private int team1UnitCount = 2;
     [SerializeField] private int team2UnitCount = 2;
@@ -83,7 +95,10 @@ public class GameBootstrap : MonoBehaviour
         unitMovementController,
         unitManager,
         stateMachine,
-        turnManager);
+        turnManager,
+        actionSelectionManager,
+        actionRangeVisualizer,
+        actionPreviewSystem);
 
         unitMovementController.Initialize(unitManager, unitInteractionController.PathRules, stateMachine);
 
@@ -95,7 +110,12 @@ public class GameBootstrap : MonoBehaviour
             unitInteractionController,
             worldTurnManager);
 
-        actionBarController.Initialize(inputManager);
+        actionBarController.Initialize(inputManager, actionSelectionManager, unitSelectionManager);
+
+        actionRangeVisualizer.Initialize(gridManager);
+        actionPreviewSystem.Initialize(gridManager);
+        statsHUDController.Initialize(unitSelectionManager);
+        
 
         if (spawnDebugUnit)
         {
@@ -129,17 +149,18 @@ public class GameBootstrap : MonoBehaviour
 
         for (int i = 0; i < team1UnitCount; i++)
         {
-            SpawnDebugUnit(team1, 8);
+            SpawnDebugUnit(team1, team1UnitDefinition);
         }
 
         for (int i = 0; i < team2UnitCount; i++)
         {
-            SpawnDebugUnit(team2, 8);
+            SpawnDebugUnit(team2, team2UnitDefinition);
         }
     }
 
-
-    private void SpawnDebugUnit(Player owner, int movement)
+    private void SpawnDebugUnit(
+    Player owner,
+    UnitDefinition definition)
     {
         HexCell spawnCell =
             gridManager.Grid
@@ -148,45 +169,9 @@ public class GameBootstrap : MonoBehaviour
                 .OrderBy(_ => Random.value)
                 .First();
 
-        UnitStats stats = new UnitStats
-        {
-            Strength = 5,
-            Dexterity = 5,
-            Reflexes = 5,
-            Vitality = 5,
-            MovementPoints = movement,
-            MoveSpeed = 12f
-        };
-
-        stats.ResetMovement();
-
-        MovementProperties movementProperties = new MovementProperties
-        {
-            IgnoreOccupants = false,
-            CanShareTile = false,
-            IgnoreHeight = false
-        };
-
-        string unitName =
-            RandomUnitNameGenerator
-                .Generate(owner.Team);
-
-        ActionStats actions =
-        new ActionStats
-        {
-            ActionPoints = 2,
-            QuickActionPoints = 1
-        };
-
-        actions.Reset();
-
         unitManager.SpawnUnit(
             spawnCell,
             owner,
-            unitName,
-            stats,
-            movementProperties,
-            actions
-            );
+            definition);
     }
 }

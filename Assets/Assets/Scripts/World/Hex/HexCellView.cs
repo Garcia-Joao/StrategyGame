@@ -4,12 +4,30 @@ public class HexCellView : MonoBehaviour
 {
     private Renderer cachedRenderer;
 
+    [Header("Transition")]
+    [SerializeField]
+    private float colorTransitionSpeed = 10f;
+
     [Header("Colors")]
     [SerializeField] private Color hoverColor = Color.yellow;
     [SerializeField] private Color selectedColor = Color.green;
     [SerializeField] private Color pathColor = Color.cyan;
     [SerializeField] private Color invalidPathColor = Color.red;
     [SerializeField] private Color moveRangeColor = Color.blue;
+
+    [Header("Action Colors")]
+    [SerializeField] private Color actionRangeColor = Color.magenta;
+
+    [SerializeField]
+    private Color validActionPreviewColor =
+        new Color(0f, 1f, 0f, 1f);
+
+    [SerializeField]
+    private Color invalidActionPreviewColor =
+        new Color(1f, 0f, 0f, 1f);
+
+    [SerializeField] private Color validActionColor = Color.green;
+    [SerializeField] private Color invalidActionColor = Color.red;
 
     public HexCell Cell { get; private set; }
 
@@ -19,14 +37,52 @@ public class HexCellView : MonoBehaviour
     private bool isInvalidPath;
     private bool isMoveRange;
 
+    private bool isActionRange;
+    private bool isValidActionTarget;
+    private bool isInvalidActionTarget;
+
+    private bool isActionPreview;
+    private bool isValidPreview;
+
     private float brushPreviewIntensity;
+
+    private Material cachedMaterial;
+
+    private Color currentColor;
+    private Color targetColor;
 
     private void Awake()
     {
-        if (cachedRenderer == null)
+        cachedRenderer =
+            GetComponentInChildren<Renderer>();
+
+        if (cachedRenderer != null)
         {
-            cachedRenderer = GetComponentInChildren<Renderer>();
+            cachedMaterial =
+                cachedRenderer.material;
+
+            currentColor =
+                cachedMaterial.color;
+
+            targetColor =
+                currentColor;
         }
+    }
+
+    private void Update()
+    {
+        if (cachedMaterial == null)
+            return;
+
+        currentColor =
+            Color.Lerp(
+                currentColor,
+                targetColor,
+                Time.deltaTime *
+                colorTransitionSpeed);
+
+        cachedMaterial.color =
+            currentColor;
     }
 
     public void Initialize(HexCell cell)
@@ -40,7 +96,8 @@ public class HexCellView : MonoBehaviour
 
     public void RefreshPosition()
     {
-        transform.position = Cell.WorldPosition;
+        transform.position =
+            Cell.WorldPosition;
     }
 
     public void ResetState()
@@ -50,7 +107,17 @@ public class HexCellView : MonoBehaviour
         isPath = false;
         isInvalidPath = false;
         isMoveRange = false;
+
+        isActionRange = false;
+        isValidActionTarget = false;
+        isInvalidActionTarget = false;
+
+        isActionPreview = false;
+        isValidPreview = false;
+
         brushPreviewIntensity = 0f;
+
+        RefreshVisual();
     }
 
     public void SetHovered(bool value)
@@ -85,61 +152,133 @@ public class HexCellView : MonoBehaviour
 
     public void SetBrushPreview(float intensity)
     {
-        brushPreviewIntensity = Mathf.Clamp01(intensity);
+        brushPreviewIntensity =
+            Mathf.Clamp01(intensity);
+
+        RefreshVisual();
+    }
+
+    public void SetActionRange(bool value)
+    {
+        isActionRange = value;
+        RefreshVisual();
+    }
+
+    public void SetValidActionTarget(bool value)
+    {
+        isValidActionTarget = value;
+        RefreshVisual();
+    }
+
+    public void SetInvalidActionTarget(bool value)
+    {
+        isInvalidActionTarget = value;
+        RefreshVisual();
+    }
+
+    public void SetActionPreview(
+        bool value,
+        bool isValid)
+    {
+        isActionPreview = value;
+        isValidPreview = isValid;
+
         RefreshVisual();
     }
 
     private void RefreshVisual()
     {
-        if (cachedRenderer == null) return;
+        if (cachedMaterial == null)
+            return;
 
-        Material mat = cachedRenderer.material;
+        // Seleção
 
         if (isSelected)
         {
-            mat.color = selectedColor;
+            targetColor = selectedColor;
             return;
         }
 
+        // Pathfinding
+
         if (isInvalidPath)
         {
-            mat.color = invalidPathColor;
+            targetColor = invalidPathColor;
             return;
         }
 
         if (isPath)
         {
-            mat.color = pathColor;
+            targetColor = pathColor;
             return;
         }
 
-        if (isMoveRange)
-        {
-            mat.color = moveRangeColor;
-            return;
-        }
-
-        if (brushPreviewIntensity > 0f)
-        {
-            mat.color = Color.Lerp(Color.yellow, Color.red, brushPreviewIntensity);
-            return;
-        }
+        // Hover
 
         if (isHovered)
         {
-            mat.color = hoverColor;
+            targetColor = hoverColor;
             return;
         }
 
-        mat.color = Color.white;
-    }
+        // Movimento
 
-    private void OnDrawGizmos()
-    {
-        Gizmos.color = Color.red;
-        Gizmos.DrawSphere(transform.position, 0.1f);
+        if (isMoveRange)
+        {
+            targetColor = moveRangeColor;
+            return;
+        }
 
-        Gizmos.color = Color.blue;
-        Gizmos.DrawWireSphere(Cell.WorldPosition, 0.15f);
+        // Brush
+
+        if (brushPreviewIntensity > 0f)
+        {
+            targetColor =
+                Color.Lerp(
+                    Color.yellow,
+                    Color.red,
+                    brushPreviewIntensity);
+
+            return;
+        }
+
+        // Preview da habilidade
+        // PRIORIDADE MÁXIMA DENTRO DO SISTEMA DE AÇÕES
+
+        if (isActionPreview)
+        {
+            targetColor =
+                isValidPreview
+                    ? validActionPreviewColor
+                    : invalidActionPreviewColor;
+
+            return;
+        }
+
+        // Alvos válidos
+
+        if (isValidActionTarget)
+        {
+            targetColor = validActionColor;
+            return;
+        }
+
+        // Alvos inválidos
+
+        if (isInvalidActionTarget)
+        {
+            targetColor = invalidActionColor;
+            return;
+        }
+
+        // Alcance
+
+        if (isActionRange)
+        {
+            targetColor = actionRangeColor;
+            return;
+        }
+
+        targetColor = Color.white;
     }
 }

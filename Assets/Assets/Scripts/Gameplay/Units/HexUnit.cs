@@ -1,8 +1,9 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
 public class HexUnit : IHexOccupant
 {
-
     public virtual bool BlocksMovement => true;
 
     public virtual bool BlocksVision => true;
@@ -16,7 +17,15 @@ public class HexUnit : IHexOccupant
     public Player Owner { get; }
 
     public UnitStats Stats { get; private set; }
-    public ActionStats ActionStats{ get; private set; }
+    public ActionStats ActionStats { get; private set; }
+
+    public event Action<HexUnit> Died;
+
+    public UnitResources Resources
+    {
+        get;
+        private set;
+    }
 
     public MovementProperties MovementProperties { get; private set; }
 
@@ -27,6 +36,10 @@ public class HexUnit : IHexOccupant
     public bool TurnEnded { get; private set; }
 
     public bool IsMoving { get; private set; }
+    private readonly List<UnitActionDefinition> actions;
+
+    public IReadOnlyList<UnitActionDefinition> Actions =>
+        actions;
 
     public event Action TurnStateChanged;
 
@@ -36,15 +49,31 @@ public class HexUnit : IHexOccupant
         Player owner,
         UnitStats stats,
         MovementProperties movementProperties,
-        ActionStats actionStats)
+        ActionStats actionStats,
+        UnitResources resources,
+        IEnumerable<UnitActionDefinition> actions)
     {
         Name = name;
         Owner = owner;
+
         Stats = stats;
-        MovementProperties = movementProperties;
         ActionStats = actionStats;
+        Resources = resources;
+
+        MovementProperties = movementProperties;
+
+        Resources.Died += OnDied;
+
+        this.actions = actions.ToList();
 
         owner?.AddUnit(this);
+    }
+
+    private void OnDied()
+    {
+        CurrentCell?.ClearOccupant();
+
+        Died?.Invoke(this);
     }
 
     public void SetStats(UnitStats stats)
@@ -99,7 +128,8 @@ public class HexUnit : IHexOccupant
     {
         TurnEnded = false;
 
-        Stats.ResetMovement();
+        Resources.Movement.Reset();
+
         ActionStats.Reset();
 
         TurnStateChanged?.Invoke();

@@ -3,24 +3,27 @@ using System;
 [Serializable]
 public class ActionStats
 {
-    public int ActionPoints;
+    public ResourcePool Actions =
+        new();
 
-    public int CurrentActionPoints;
-
-    public int QuickActionPoints;
-
-    public int CurrentQuickActionPoints;
+    public ResourcePool QuickActions =
+        new();
 
     public event Action ActionsChanged;
 
-    public void Reset()
+    public void Initialize(
+        int actions,
+        int quickActions)
     {
-        CurrentActionPoints =
-            ActionPoints;
+        Actions.Initialize(actions);
+        QuickActions.Initialize(quickActions);
 
-        CurrentQuickActionPoints =
-            QuickActionPoints;
+        Actions.Changed += RaiseChanged;
+        QuickActions.Changed += RaiseChanged;
+    }
 
+    private void RaiseChanged()
+    {
         ActionsChanged?.Invoke();
     }
 
@@ -29,30 +32,21 @@ public class ActionStats
         int quickCost)
     {
         return
-            CurrentActionPoints >= actionCost &&
-            CurrentQuickActionPoints >= quickCost;
+            Actions.Has(actionCost) &&
+            QuickActions.Has(quickCost);
     }
 
     public void Consume(
         int actionCost,
         int quickCost)
     {
-        CurrentActionPoints -= actionCost;
-
-        CurrentQuickActionPoints -= quickCost;
-
-        ActionsChanged?.Invoke();
+        Actions.Consume(actionCost);
+        QuickActions.Consume(quickCost);
     }
-}
 
-public struct ActionCost
-{
-    public int ActionPoints;
-
-    public int QuickActionPoints;
-
-    public int Mana;
-
-    public int Health;
-    public int MovementPoints;
+    public void Reset()
+    {
+        Actions.Reset();
+        QuickActions.Reset();
+    }
 }

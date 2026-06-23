@@ -1,3 +1,5 @@
+using System;
+
 public interface IUnitAction
 {
     string Name { get; }
@@ -11,4 +13,14 @@ public interface IUnitAction
     void Execute(
         HexUnit source,
         HexCell target);
+}
+
+[Serializable]
+public class ActionCost
+{
+    public int ActionPoints;
+    public int QuickActionPoints;
+    public int Mana;
+    public int Health;
+    public int MovementPoints;
 }

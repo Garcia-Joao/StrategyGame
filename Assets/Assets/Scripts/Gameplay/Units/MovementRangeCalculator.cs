@@ -58,7 +58,7 @@ public class MovementRangeCalculator
                         neighbor);
 
                 if (nextCost >
-                    unit.Stats.CurrentMovementPoints)
+                    unit.Resources.Movement.Current)
                 {
                     continue;
                 }

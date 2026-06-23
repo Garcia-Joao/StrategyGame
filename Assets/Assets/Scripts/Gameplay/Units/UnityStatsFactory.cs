@@ -1,12 +1,10 @@
 public static class UnitStatsFactory
 {
-    public static UnitStats Create(UnitDefinition definition)
+    public static UnitStats Create(
+        UnitDefinition definition)
     {
         return new UnitStats
         {
-            MovementPoints =
-                definition.MovementPoints,
-
             MoveSpeed =
                 definition.MoveSpeed,
 
@@ -30,22 +28,24 @@ public static class UnitStatsFactory
     {
         return new UnitStats
         {
-            MovementPoints =
-                baseStats.movementPoints +
-                classDefinition.movementPointsBonus,
-
-            MoveSpeed = baseStats.moveSpeed,
+            MoveSpeed =
+                baseStats.moveSpeed,
 
             Strength =
-                baseStats.strength + classDefinition.strengthBonus,
+                baseStats.strength +
+                classDefinition.strengthBonus,
 
             Dexterity =
-                baseStats.dexterity + classDefinition.dexterityBonus,
+                baseStats.dexterity +
+                classDefinition.dexterityBonus,
 
             Reflexes =
-                baseStats.reflexes + classDefinition.reflexesBonus,
+                baseStats.reflexes +
+                classDefinition.reflexesBonus,
 
-            Vitality = baseStats.vitality + classDefinition.vitalityBonus
+            Vitality =
+                baseStats.vitality +
+                classDefinition.vitalityBonus
         };
     }
 }

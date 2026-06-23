@@ -32,12 +32,16 @@ public class UnitMovementController : MonoBehaviour
 
         int pathCost = CalculatePathCost(path);
 
-        if (pathCost > unit.Stats.CurrentMovementPoints)
+        if (pathCost >
+            unit.Resources.Movement.Current)
+        {
             return;
+        }
+
+        unit.Resources.Movement.Consume(
+            pathCost);
 
         stateMachine.SetState(GameState.UnitMoving);
-
-        unit.Stats.ConsumeMovement(pathCost);
 
         StartCoroutine(MoveRoutine(unit, path));
     }

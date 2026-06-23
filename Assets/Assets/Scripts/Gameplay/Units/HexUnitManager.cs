@@ -6,9 +6,6 @@ using UnityEngine;
 public class UnitManager : MonoBehaviour
 {
     [SerializeField]
-    private GameObject unitPrefab;
-
-    [SerializeField]
     private float unitHeightOffset = 0.5f;
 
     public float UnitHeightOffset =>
@@ -60,11 +57,9 @@ public class UnitManager : MonoBehaviour
     }
 
     public HexUnit SpawnUnit(
-        HexCell cell,
-        Player owner,
-        UnitStats stats,
-        MovementProperties movementProperties,
-        ActionStats actionStats)
+    HexCell cell,
+    Player owner,
+    UnitDefinition definition)
     {
         Vector3 spawnPos =
             cell.WorldPosition +
@@ -72,67 +67,51 @@ public class UnitManager : MonoBehaviour
 
         GameObject instance =
             Instantiate(
-                unitPrefab,
+                definition.Prefab,
                 spawnPos,
                 Quaternion.identity);
 
-        HexUnitView view =
-            instance.GetComponent<HexUnitView>();
+        instance.name = definition.UnitName;
+
+        HexUnitView view = instance.GetComponent<HexUnitView>();
+
+        UnitStats stats = UnitStatsFactory.Create(definition);
+
+        MovementProperties movementProperties =
+            new MovementProperties
+            {
+                IgnoreOccupants = false,
+                CanShareTile = false,
+                IgnoreHeight = false
+            };
+
+        ActionStats actionStats =
+            new ActionStats();
+
+        actionStats.Initialize(definition.ActionPoints, definition.QuickActionPoints);
+
+        UnitResources resources =
+            new UnitResources();
+
+        resources.Initialize(
+            health: definition.StartHealth,
+            mana: definition.StartMana,
+            movement: definition.MovementPoints);
 
         HexUnit unit =
             new HexUnit(
-                owner.Name,
+                definition.UnitName,
                 owner,
                 stats,
                 movementProperties,
-                actionStats
-                );
+                actionStats,
+                resources,
+                definition.Actions);
 
         unit.SetCell(cell);
         unit.SetView(view);
 
-        cell.SetOccupyingUnit(
-            unit);
-
-        view.Initialize(unit);
-
-        units.Add(unit);
-
-        return unit;
-    }
-
-    public HexUnit SpawnUnit(
-        HexCell cell,
-        Player owner,
-        string name,
-        UnitStats stats,
-        MovementProperties movementProperties,
-        ActionStats actionStats)
-    {
-        Vector3 spawnPos =
-            cell.WorldPosition +
-            Vector3.up * unitHeightOffset;
-
-        GameObject instance = Instantiate(unitPrefab,spawnPos,Quaternion.identity);
-
-        instance.name = name;
-
-        HexUnitView view =
-            instance.GetComponent<HexUnitView>();
-
-        HexUnit unit =
-            new HexUnit(
-                name,
-                owner,
-                stats,
-                movementProperties,
-                actionStats);
-
-        unit.SetCell(cell);
-        unit.SetView(view);
-
-        cell.SetOccupyingUnit(
-            unit);
+        cell.SetOccupyingUnit(unit);
 
         view.Initialize(unit);
 

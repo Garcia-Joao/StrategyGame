@@ -1,5 +1,4 @@
 using System;
-using UnityEngine;
 
 [Serializable]
 public class UnitStats
@@ -9,12 +8,7 @@ public class UnitStats
     public int Reflexes;
     public int Vitality;
 
-    public int MovementPoints;
-    public int CurrentMovementPoints;
-
     public float MoveSpeed;
-
-    public event Action MovementPointsChanged;
 
     public UnitStats Clone()
     {
@@ -24,29 +18,7 @@ public class UnitStats
             Dexterity = Dexterity,
             Reflexes = Reflexes,
             Vitality = Vitality,
-
-            MovementPoints = MovementPoints,
-            CurrentMovementPoints = MovementPoints,
-
             MoveSpeed = MoveSpeed
         };
-    }
-
-    public void ResetMovement()
-    {
-        CurrentMovementPoints = MovementPoints;
-
-        MovementPointsChanged?.Invoke();
-    }
-
-    public void ConsumeMovement(
-        int amount)
-    {
-        CurrentMovementPoints =
-            Mathf.Max(
-                0,
-                CurrentMovementPoints - amount);
-
-        MovementPointsChanged?.Invoke();
     }
 }

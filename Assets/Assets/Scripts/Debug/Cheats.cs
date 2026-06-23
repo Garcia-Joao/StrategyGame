@@ -20,17 +20,6 @@ public static class Cheats
 
             return;
         }
-
-        Debug.Log(
-$@"=== {unit.Name} ===
-
-Movement: {unit.Stats.MovementPoints}
-Move Speed: {unit.Stats.MoveSpeed}
-
-Strength: {unit.Stats.Strength}
-Dexterity: {unit.Stats.Dexterity}
-Reflexes: {unit.Stats.Reflexes}
-Vitality: {unit.Stats.Vitality}");
     }
 
     [ConsoleMethod(
@@ -77,7 +66,7 @@ Vitality: {unit.Stats.Vitality}");
             case "movement":
             case "move":
             case "mp":
-                unit.Stats.MovementPoints = value;
+                //unit.Resources. = value;
                 break;
 
             case "movespeed":
@@ -117,7 +106,6 @@ Vitality: {unit.Stats.Vitality}");
         unit.Stats.Dexterity = 999;
         unit.Stats.Reflexes = 999;
         unit.Stats.Vitality = 999;
-        unit.Stats.MovementPoints = 99;
         unit.Stats.MoveSpeed = 50f;
 
         Debug.Log(
