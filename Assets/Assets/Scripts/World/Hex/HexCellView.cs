@@ -1,3 +1,4 @@
+using System.Collections;
 using UnityEngine;
 
 public class HexCellView : MonoBehaviour
@@ -51,6 +52,11 @@ public class HexCellView : MonoBehaviour
     private Color currentColor;
     private Color targetColor;
 
+    private int pathVersion;
+
+    private int pathIndex;
+    private bool usePathWave;
+
     private void Awake()
     {
         cachedRenderer =
@@ -74,15 +80,43 @@ public class HexCellView : MonoBehaviour
         if (cachedMaterial == null)
             return;
 
+        Color animatedTarget = GetAnimatedTargetColor();
+
         currentColor =
             Color.Lerp(
                 currentColor,
-                targetColor,
+                animatedTarget,
                 Time.deltaTime *
                 colorTransitionSpeed);
 
         cachedMaterial.color =
             currentColor;
+    }
+
+    private Color GetAnimatedTargetColor()
+    {
+        if (isPath || isInvalidPath)
+        {
+            Color baseColor =
+                isPath
+                    ? pathColor
+                    : invalidPathColor;
+
+            float wave =
+                Mathf.Sin(
+                    Time.time * 2.67f
+                    - pathIndex * 0.45f);
+
+            wave =
+                (wave + 1f) * 0.5f;
+
+            return Color.Lerp(
+                Color.white,
+                baseColor,
+                wave);
+        }
+
+        return targetColor;
     }
 
     public void Initialize(HexCell cell)
@@ -135,12 +169,20 @@ public class HexCellView : MonoBehaviour
     public void SetPath(bool value)
     {
         isPath = value;
+
+        if (value)
+            isInvalidPath = false;
+
         RefreshVisual();
     }
 
     public void SetInvalidPath(bool value)
     {
         isInvalidPath = value;
+
+        if (value)
+            isPath = false;
+
         RefreshVisual();
     }
 
@@ -280,5 +322,70 @@ public class HexCellView : MonoBehaviour
         }
 
         targetColor = Color.white;
+    }
+
+    private Coroutine pathRoutine;
+
+    public void SetPathAnimated(
+        bool valid,
+        float delay,
+        int version)
+    {
+        pathVersion = version;
+
+        if (pathRoutine != null)
+            StopCoroutine(pathRoutine);
+
+        pathRoutine =
+            StartCoroutine(
+                AnimatePath(
+                    valid,
+                    delay,
+                    version));
+    }
+
+    private IEnumerator AnimatePath(
+        bool valid,
+        float delay,
+        int version)
+    {
+        yield return new WaitForSeconds(delay);
+
+        if (version != pathVersion)
+            yield break;
+
+        if (valid)
+        {
+            isPath = true;
+            isInvalidPath = false;
+        }
+        else
+        {
+            isInvalidPath = true;
+            isPath = false;
+        }
+
+        RefreshVisual();
+    }
+
+    public void InvalidatePathAnimations()
+    {
+        pathVersion++;
+
+        isPath = false;
+        isInvalidPath = false;
+
+        if (pathRoutine != null)
+        {
+            StopCoroutine(pathRoutine);
+            pathRoutine = null;
+        }
+
+        RefreshVisual();
+    }
+
+    public void SetPathWaveIndex(int index)
+    {
+        pathIndex = index;
     }
 }

@@ -22,4 +22,15 @@ public class UnitActionDefinition : ScriptableObject
 
     [Header("Effects")]
     public List<ActionEffect> Effects;
+
+    [Header("Types")]
+    public List<ActionType> ActionTypes;
+}
+
+public enum ActionType
+{
+    Attack,
+    Heal,
+    Buff,
+    Movement
 }

@@ -7,6 +7,7 @@ public class Player
     public Team Team { get; }
 
     public bool IsLocalPlayer { get; }
+    public bool IsAI => !IsLocalPlayer;
 
     private readonly List<HexUnit>
         ownedUnits = new();

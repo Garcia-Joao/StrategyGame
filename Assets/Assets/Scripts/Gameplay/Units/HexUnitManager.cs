@@ -25,6 +25,8 @@ public class UnitManager : MonoBehaviour
 
     public IReadOnlyList<Player> Players => players;
 
+    public event Action<HexUnit> UnitSpawned;
+
     public IEnumerable<HexUnit> GetUnits(Team team)
     {
         return units.Where(x => x.Team == team);
@@ -54,6 +56,11 @@ public class UnitManager : MonoBehaviour
         {
             LocalPlayer = player;
         }
+    }
+
+    public bool IsAIControlled(Team team)
+    {
+        return LocalPlayer.Team != team;
     }
 
     public HexUnit SpawnUnit(
@@ -106,7 +113,8 @@ public class UnitManager : MonoBehaviour
                 movementProperties,
                 actionStats,
                 resources,
-                definition.Actions);
+                definition.Actions,
+                instance.transform);
 
         unit.SetCell(cell);
         unit.SetView(view);
@@ -116,7 +124,7 @@ public class UnitManager : MonoBehaviour
         view.Initialize(unit);
 
         units.Add(unit);
-
+        UnitSpawned?.Invoke(unit);
         return unit;
     }
 

@@ -2646,7 +2646,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &556806562
 RectTransform:
   m_ObjectHideFlags: 0
@@ -3146,6 +3146,7 @@ MonoBehaviour:
   actionRangeVisualizer: {fileID: 1414551372}
   actionPreviewSystem: {fileID: 1414551373}
   statsController: {fileID: 54518732}
+  aiPathRules: {fileID: 11400000, guid: 033c432d441e29a4081c6b691f22e29c, type: 2}
   cameraController: {fileID: 362579490}
   hexMouseController: {fileID: 1414551371}
   unitInteractionController: {fileID: 1071663967}
@@ -3153,7 +3154,7 @@ MonoBehaviour:
   actionBarController: {fileID: 2114827486}
   statsHUDController: {fileID: 54518733}
   spawnDebugUnit: 1
-  controlTeam2: 1
+  controlTeam2: 0
   team1UnitDefinition: {fileID: 11400000, guid: 86b51700627be0f4384b045ac687ab2a, type: 2}
   team2UnitDefinition: {fileID: 11400000, guid: 3f3dfa1b2c7e23448b3345b0a944ae71, type: 2}
   team1UnitCount: 1

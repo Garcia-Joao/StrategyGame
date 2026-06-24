@@ -21,6 +21,10 @@ public class GameBootstrap : MonoBehaviour
     [SerializeField] private ActionRangeVisualizer actionRangeVisualizer;
     [SerializeField] private ActionPreviewSystem actionPreviewSystem;
     [SerializeField] private StatsController statsController;
+    private HexPathfinder pathfinder;
+    [SerializeField] private ActionExecutor actionExecutor;
+    [SerializeField] private HexPathRules aiPathRules;
+    private AIManager aiManager;
 
     [Header("Consumers")]
     [SerializeField] private CameraController cameraController;
@@ -51,8 +55,7 @@ public class GameBootstrap : MonoBehaviour
     private void Start()
     {
         stateMachine.SetState(GameState.Initializing);
-        worldTurnManager =
-            new WorldTurnManager();
+        worldTurnManager = new WorldTurnManager();
 
         gridManager.Initialize(
             unitManager);
@@ -102,20 +105,30 @@ public class GameBootstrap : MonoBehaviour
 
         unitMovementController.Initialize(unitManager, unitInteractionController.PathRules, stateMachine);
 
+        pathfinder = new HexPathfinder(gridManager.Grid, aiPathRules);
+
+        aiManager = new AIManager(
+                        unitManager,
+                        pathfinder,
+                        aiPathRules,
+                        unitMovementController,
+                        actionExecutor);
+
         turnManager.Initialize(
             stateMachine,
             unitManager,
             unitSelectionManager,
             cameraController,
             unitInteractionController,
-            worldTurnManager);
+            worldTurnManager,
+            aiManager);
 
         actionBarController.Initialize(inputManager, actionSelectionManager, unitSelectionManager);
 
         actionRangeVisualizer.Initialize(gridManager);
         actionPreviewSystem.Initialize(gridManager);
         statsHUDController.Initialize(unitSelectionManager);
-        
+
 
         if (spawnDebugUnit)
         {
@@ -158,9 +171,7 @@ public class GameBootstrap : MonoBehaviour
         }
     }
 
-    private void SpawnDebugUnit(
-    Player owner,
-    UnitDefinition definition)
+    private void SpawnDebugUnit(Player owner, UnitDefinition definition)
     {
         HexCell spawnCell =
             gridManager.Grid
@@ -169,9 +180,15 @@ public class GameBootstrap : MonoBehaviour
                 .OrderBy(_ => Random.value)
                 .First();
 
-        unitManager.SpawnUnit(
+        HexUnit unit = unitManager.SpawnUnit(
             spawnCell,
             owner,
             definition);
+
+        if (owner.Team != unitManager.LocalPlayer.Team)
+        {
+            // IA controla automaticamente
+            aiManager.RegisterUnit(unit);
+        }
     }
 }

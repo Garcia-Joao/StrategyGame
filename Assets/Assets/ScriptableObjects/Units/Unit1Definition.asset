@@ -22,7 +22,7 @@ MonoBehaviour:
   StartMana: 60
   MovementPoints: 5
   MoveSpeed: 8
-  Strength: 0
+  Strength: 2
   Dexterity: 9
-  Reflexes: 0
-  Vitality: 0
+  Reflexes: 4
+  Vitality: 7

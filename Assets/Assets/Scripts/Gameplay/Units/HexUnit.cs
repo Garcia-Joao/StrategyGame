@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using UnityEngine;
 
 public class HexUnit : IHexOccupant
 {
@@ -43,6 +44,8 @@ public class HexUnit : IHexOccupant
 
     public event Action TurnStateChanged;
 
+    public readonly Transform transform;
+
 
     public HexUnit(
         string name,
@@ -51,7 +54,8 @@ public class HexUnit : IHexOccupant
         MovementProperties movementProperties,
         ActionStats actionStats,
         UnitResources resources,
-        IEnumerable<UnitActionDefinition> actions)
+        IEnumerable<UnitActionDefinition> actions,
+        Transform transform)
     {
         Name = name;
         Owner = owner;
@@ -61,6 +65,8 @@ public class HexUnit : IHexOccupant
         Resources = resources;
 
         MovementProperties = movementProperties;
+
+        this.transform = transform;
 
         Resources.Died += OnDied;
 

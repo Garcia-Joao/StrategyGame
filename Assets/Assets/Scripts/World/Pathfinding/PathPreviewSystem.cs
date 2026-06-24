@@ -8,7 +8,11 @@ public class PathPreviewSystem : MonoBehaviour
 
     private HexGridManager gridManager;
 
-    public void Initialize(HexGridManager gridManager)
+    private int lastPathLength;
+    private int pathVersion;
+
+    public void Initialize(
+        HexGridManager gridManager)
     {
         this.gridManager = gridManager;
 
@@ -21,25 +25,39 @@ public class PathPreviewSystem : MonoBehaviour
         List<HexCell> path,
         bool valid)
     {
+        bool replayAnimation = Mathf.Abs(path.Count - lastPathLength) > 1;
+
+        lastPathLength = path.Count;
+
         Clear();
 
-        foreach (HexCell cell in path)
+        pathVersion++;
+
+        const float stepDelay = 0.03f;
+
+        for (int i = 0; i < path.Count; i++)
         {
             HexCellView view =
-                gridManager.GetView(cell);
+                gridManager.GetView(path[i]);
 
             if (view == null)
-            {
                 continue;
-            }
 
-            if (valid)
+            view.SetPathWaveIndex(i);
+
+            if (replayAnimation)
             {
-                view.SetPath(true);
+                view.SetPathAnimated(
+                    valid,
+                    i * stepDelay,
+                    pathVersion);
             }
             else
             {
-                view.SetInvalidPath(true);
+                if (valid)
+                    view.SetPath(true);
+                else
+                    view.SetInvalidPath(true);
             }
 
             activeViews.Add(view);
@@ -48,12 +66,9 @@ public class PathPreviewSystem : MonoBehaviour
 
     public void Clear()
     {
-        foreach (HexCellView view
-                 in activeViews)
+        foreach (HexCellView view in activeViews)
         {
-            view.SetPath(false);
-
-            view.SetInvalidPath(false);
+            view.InvalidatePathAnimations();
         }
 
         activeViews.Clear();

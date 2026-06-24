@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: Unit2Definition
   m_EditorClassIdentifier: Assembly-CSharp::UnitDefinition
   UnitName: "Jo\xE3o"
-  Prefab: {fileID: 5923058956582152657, guid: 759d5ba520f23e140adc16174ba740b9, type: 3}
+  Prefab: {fileID: 5923058956582152657, guid: 794bfe4a0fd088842b1f4eac9ce3b309, type: 3}
   ActionPoints: 2
   QuickActionPoints: 2
   Actions:
@@ -22,7 +22,7 @@ MonoBehaviour:
   StartMana: 50
   MovementPoints: 10
   MoveSpeed: 8
-  Strength: 0
+  Strength: 4
   Dexterity: 3
-  Reflexes: 0
-  Vitality: 0
+  Reflexes: 6
+  Vitality: 2

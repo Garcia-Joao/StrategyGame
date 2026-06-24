@@ -31,3 +31,4 @@ MonoBehaviour:
   Area: {fileID: 11400000, guid: 065c37beaaaceaf4bb31237d844ae400, type: 2}
   Effects:
   - {fileID: 11400000, guid: 2529ad5dd647eda44b740d42facfe008, type: 2}
+  ActionTypes: 00000000

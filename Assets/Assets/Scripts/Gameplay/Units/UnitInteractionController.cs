@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.InputSystem;
 using static ActionRangeCalculator;
 
@@ -103,6 +104,15 @@ public class UnitInteractionController : MonoBehaviour
         actionExecutor = new ActionExecutor(gridManager.Grid);
     }
 
+    void Update()
+    {
+        if (IsPointerOverUI())
+        {
+            pathPreview.Clear();
+            return;
+        }
+    }
+
     private void OnDestroy()
     {
         if (inputManager != null)
@@ -133,21 +143,64 @@ public class UnitInteractionController : MonoBehaviour
         }
     }
 
+    private bool IsPointerOverUI()
+    {
+        PointerEventData eventData =
+            new PointerEventData(EventSystem.current)
+            {
+                position = Mouse.current.position.ReadValue()
+            };
+
+        List<RaycastResult> results = new();
+        EventSystem.current.RaycastAll(eventData, results);
+
+        return results.Count > 0;
+    }
+
     // ---------------- INPUT ----------------
 
     private void OnLeftClick(float _)
     {
+        if (IsPointerOverUI())
+            return;
 
-        Debug.Log(
-    $"Mode: {actionSelectionManager.CurrentMode} | " +
-    $"Action: {actionSelectionManager.SelectedAction?.ActionName}");
-        Vector2 mouse = inputManager.MousePositionAction.GetCurrentValue();
+        Vector2 mouse =
+            inputManager
+                .MousePositionAction
+                .GetCurrentValue();
 
-        HexUnitView unitView = raycaster.RaycastUnit(mouse);
+        HexUnit selected =
+            unitSelection.SelectedUnit;
+
+        // ==================================================
+        // CLIQUE EM UNIDADE
+        // ==================================================
+
+        HexUnitView unitView =
+            raycaster.RaycastUnit(mouse);
 
         if (unitView != null)
         {
-            HexUnit unit = unitView.Unit;
+            // Se estiver usando habilidade,
+            // usa a célula da unidade clicada
+            if (actionSelectionManager.IsAbilityMode)
+            {
+                if (selected != null &&
+                    !selected.IsMoving)
+                {
+                    HandleAbilityClick(
+                        selected,
+                        unitView.Unit.CurrentCell);
+                }
+
+                return;
+            }
+
+            HexUnit unit =
+                unitView.Unit;
+
+            if (!CanControl(unit))
+                return;
 
             if (unit.TurnEnded)
                 return;
@@ -160,7 +213,6 @@ public class UnitInteractionController : MonoBehaviour
                         return;
 
                     unitSelection.SelectUnit(unit);
-
                     break;
 
                 case TurnMode.Dex:
@@ -169,23 +221,29 @@ public class UnitInteractionController : MonoBehaviour
                         return;
 
                     unitSelection.SelectUnit(unit);
-
                     break;
             }
 
             return;
         }
 
-        HexCellView cellView = raycaster.RaycastCell(mouse);
+        // ==================================================
+        // CLIQUE EM CÉLULA
+        // ==================================================
+
+        HexCellView cellView =
+            raycaster.RaycastCell(mouse);
 
         if (cellView == null)
             return;
 
-        HexUnit selected = unitSelection.SelectedUnit;
-
-        if (selected == null || selected.IsMoving)
+        if (selected == null ||
+            selected.IsMoving)
+        {
             return;
+        }
 
+        // HABILIDADE
         if (actionSelectionManager.IsAbilityMode)
         {
             HandleAbilityClick(
@@ -195,14 +253,18 @@ public class UnitInteractionController : MonoBehaviour
             return;
         }
 
-        if (!reachableCells.Contains(cellView.Cell))
+        // MOVIMENTO
+        if (!reachableCells.Contains(
+                cellView.Cell))
+        {
             return;
+        }
 
         MovementContext context =
             MovementContextFactory
                 .FromUnit(selected);
 
-        var path =
+        List<HexCell> path =
             pathfinder.FindPath(
                 selected.CurrentCell,
                 cellView.Cell,
@@ -211,7 +273,9 @@ public class UnitInteractionController : MonoBehaviour
         if (path == null)
             return;
 
-        movementController.MoveUnit(selected, path);
+        movementController.MoveUnit(
+            selected,
+            path);
     }
 
     private void OnRightClick(float _)
@@ -237,6 +301,9 @@ public class UnitInteractionController : MonoBehaviour
         pathPreview.Clear();
 
         HexUnit selectedUnit = unitSelection.SelectedUnit;
+
+        if (!CanControl(selectedUnit))
+            return;
 
         if (selectedUnit == null)
             return;
@@ -275,6 +342,9 @@ public class UnitInteractionController : MonoBehaviour
 
     private void OnUnitSelected(HexUnit unit)
     {
+        if (!CanControl(unit))
+            return;
+
         unit.Resources.Movement.Changed -=
     OnMovementChanged;
 
@@ -326,6 +396,10 @@ public class UnitInteractionController : MonoBehaviour
 
     private void OnMovementStarted(HexUnit unit)
     {
+
+        if (!CanControl(unit))
+            return;
+            
         pathPreview.Clear();
         rangeVisualizer.Clear();
         reachableCells.Clear();
@@ -510,5 +584,14 @@ public class UnitInteractionController : MonoBehaviour
         actionPreviewSystem.ShowPreview(
             affectedCells,
             isValidTarget);
+    }
+
+    private bool CanControl(HexUnit unit)
+    {
+        return unit != null &&
+               unit.Owner != null &&
+               unit.Owner.IsLocalPlayer &&
+               !unit.TurnEnded &&
+               !unit.IsMoving;
     }
 }
